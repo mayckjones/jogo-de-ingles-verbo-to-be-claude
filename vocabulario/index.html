@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VocabQuest — Vocabulário em Inglês</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117;
+  --surface: #1a1d2e;
+  --surface2: #252840;
+  --border: #2e3150;
+  --accent: #58cc02;
+  --accent2: #ffd900;
+  --accent3: #ff4b4b;
+  --accent4: #1cb0f6;
+  --accent5: #ce82ff;
+  --text: #ffffff;
+  --text2: #afafaf;
+  --text3: #6b6b8a;
+  --radius: 16px;
+  --radius-sm: 10px;
+}
+body { font-family: 'Nunito', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ===== HOME ===== */
+#home-screen {
+  background: linear-gradient(135deg, #0f1117 0%, #1a1d2e 50%, #12102b 100%);
+  align-items: center;
+  padding: 0 0 80px 0;
+}
+#home-screen::before {
+  content:''; position:fixed; width:500px; height:500px; border-radius:50%;
+  background:radial-gradient(circle,rgba(206,130,255,0.08) 0%,transparent 70%);
+  top:-100px; right:-100px; pointer-events:none;
+}
+
+.home-inner { width:100%; max-width:520px; padding:32px 20px 20px; }
+.game-logo { font-size:60px; text-align:center; margin-bottom:4px; animation:bounce 2s ease-in-out infinite; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+.game-title { font-size:42px; font-weight:900; text-align:center; background:linear-gradient(135deg,#ce82ff,#1cb0f6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:4px; }
+.game-subtitle { font-size:13px; color:var(--text3); text-align:center; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:24px; }
+
+.home-stats { display:flex; gap:12px; justify-content:center; margin-bottom:24px; }
+.home-stat { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius-sm); padding:10px 18px; text-align:center; }
+.home-stat-value { font-size:22px; font-weight:900; color:var(--accent2); }
+.home-stat-label { font-size:10px; color:var(--text3); font-weight:700; text-transform:uppercase; }
+
+.section-label { font-size:12px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px; }
+
+/* Categories grid */
+.categories-grid { display:flex; flex-direction:column; gap:8px; margin-bottom:20px; }
+.category-card {
+  background:var(--surface);
+  border:2px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:14px 16px;
+  cursor:pointer;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.category-card:hover { border-color:var(--accent5); background:rgba(206,130,255,0.08); transform:translateX(4px); }
+.category-card.selected { border-color:var(--accent5); background:rgba(206,130,255,0.12); }
+.cat-icon { font-size:26px; min-width:36px; text-align:center; }
+.cat-info { flex:1; }
+.cat-name { font-size:15px; font-weight:800; color:var(--text); }
+.cat-count { font-size:12px; color:var(--text3); font-weight:600; }
+.cat-check { font-size:18px; opacity:0; transition:opacity 0.2s; }
+.category-card.selected .cat-check { opacity:1; }
+
+.select-all-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+.btn-text { background:none; border:none; color:var(--accent4); font-family:'Nunito',sans-serif; font-size:13px; font-weight:700; cursor:pointer; padding:4px 8px; }
+
+/* Mode selector */
+.mode-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:20px; }
+.mode-btn {
+  background:var(--surface); border:2px solid var(--border); border-radius:var(--radius-sm);
+  padding:12px 10px; color:var(--text2); font-family:'Nunito',sans-serif; font-size:13px;
+  font-weight:700; cursor:pointer; transition:all 0.15s; text-align:center;
+}
+.mode-btn:hover { border-color:var(--accent4); color:var(--text); }
+.mode-btn.active { border-color:var(--accent4); background:rgba(28,176,246,0.1); color:var(--accent4); }
+.mode-icon { font-size:20px; display:block; margin-bottom:3px; }
+
+.btn-start {
+  width:100%; background:var(--accent5); color:#fff;
+  box-shadow:0 4px 0 #7a2faa;
+  font-size:18px; padding:18px; border-radius:var(--radius-sm);
+  font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; border:none;
+  transition:all 0.15s; letter-spacing:0.5px;
+}
+.btn-start:hover { filter:brightness(1.1); }
+.btn-start:active { transform:translateY(3px); box-shadow:none; }
+.btn-start:disabled { background:var(--border); color:var(--text3); box-shadow:none; cursor:not-allowed; }
+
+.home-nav { display:flex; gap:10px; margin-top:12px; }
+.btn-nav { flex:1; background:var(--surface); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px; color:var(--text2); font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.btn-nav:hover { border-color:var(--accent4); color:var(--text); }
+
+/* ===== GAME SCREEN ===== */
+#game-screen { background:var(--bg); }
+.game-header {
+  display:flex; align-items:center; gap:10px; padding:14px 18px;
+  background:var(--surface); border-bottom:2px solid var(--border);
+  position:sticky; top:0; z-index:10;
+}
+.btn-back { background:var(--surface2); border:2px solid var(--border); border-radius:8px; padding:7px 12px; color:var(--text2); font-family:'Nunito',sans-serif; font-size:14px; font-weight:700; cursor:pointer; }
+.btn-back:hover { color:var(--text); border-color:var(--accent4); }
+
+.hud-lives { display:flex; gap:3px; }
+.life-icon { font-size:20px; transition:transform 0.3s; }
+.life-icon.lost { opacity:0.3; transform:scale(0.8); }
+
+.hud-streak { display:flex; align-items:center; gap:4px; background:var(--surface2); padding:5px 10px; border-radius:20px; font-weight:800; font-size:13px; }
+.hud-xp { flex:1; }
+.xp-bar-wrap { background:var(--border); border-radius:20px; height:8px; overflow:hidden; }
+.xp-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent5),var(--accent4)); border-radius:20px; transition:width 0.5s cubic-bezier(0.34,1.56,0.64,1); }
+.xp-label { font-size:10px; color:var(--text3); font-weight:700; text-align:right; margin-bottom:2px; }
+.hud-level { background:var(--accent5); color:#fff; border-radius:20px; padding:4px 10px; font-weight:900; font-size:12px; white-space:nowrap; }
+
+.game-body { flex:1; padding:20px 18px; max-width:660px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:18px; }
+
+.progress-top { background:var(--border); border-radius:20px; height:7px; overflow:hidden; }
+.progress-top-fill { height:100%; background:linear-gradient(90deg,var(--accent5),var(--accent4)); border-radius:20px; transition:width 0.4s ease; }
+
+/* category tag */
+.cat-tag { display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:20px; font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; background:rgba(206,130,255,0.12); color:var(--accent5); border:1px solid rgba(206,130,255,0.3); margin-bottom:12px; }
+
+/* Question card */
+.question-card { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:24px 22px; animation:slideIn 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes slideIn { from{opacity:0;transform:translateY(20px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+.q-instruction { font-size:14px; color:var(--text2); margin-bottom:16px; font-weight:600; line-height:1.6; }
+.q-instruction strong { color:var(--text); }
+
+/* Word card display */
+.word-display {
+  text-align:center; padding:20px 16px; margin-bottom:6px;
+}
+.word-main { font-size:36px; font-weight:900; color:var(--text); margin-bottom:4px; font-family:'Space Mono',monospace; }
+.word-pron { font-size:15px; color:var(--accent4); font-style:italic; margin-bottom:6px; }
+.word-pt { font-size:14px; color:var(--text3); }
+
+/* For PT→EN direction */
+.word-main-pt { font-size:32px; font-weight:900; color:var(--accent2); margin-bottom:6px; }
+
+/* Fill input */
+.blank-input {
+  background:var(--surface2); border:2px solid var(--accent4); border-radius:var(--radius-sm);
+  color:var(--text); font-family:'Space Mono',monospace; font-size:18px; padding:12px 16px;
+  width:100%; outline:none; transition:border-color 0.2s,box-shadow 0.2s; caret-color:var(--accent4);
+  text-align:center;
+}
+.blank-input:focus { border-color:var(--accent4); box-shadow:0 0 0 3px rgba(28,176,246,0.15); }
+.blank-input.correct { border-color:var(--accent); background:rgba(88,204,2,0.08); }
+.blank-input.wrong { border-color:var(--accent3); background:rgba(255,75,75,0.08); }
+
+/* Choices */
+.choices-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px; }
+.choice-btn {
+  background:var(--surface2); border:2px solid var(--border); border-radius:var(--radius-sm);
+  color:var(--text); font-family:'Space Mono',monospace; font-size:14px; font-weight:700;
+  padding:14px 10px; cursor:pointer; transition:all 0.15s; text-align:center; line-height:1.3;
+}
+.choice-btn:hover:not(:disabled) { border-color:var(--accent4); background:rgba(28,176,246,0.1); transform:translateY(-2px); }
+.choice-btn.correct-choice { border-color:var(--accent); background:rgba(88,204,2,0.15); color:#7be338; }
+.choice-btn.wrong-choice { border-color:var(--accent3); background:rgba(255,75,75,0.15); color:#ff8080; }
+.choice-btn:disabled { cursor:not-allowed; }
+
+/* Match pairs */
+.match-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.match-col { display:flex; flex-direction:column; gap:8px; }
+.match-item {
+  background:var(--surface2); border:2px solid var(--border); border-radius:var(--radius-sm);
+  padding:12px 14px; cursor:pointer; transition:all 0.15s; text-align:center;
+  font-weight:700; font-size:14px; user-select:none;
+}
+.match-item:hover { border-color:var(--accent5); }
+.match-item.selected-a { border-color:var(--accent5); background:rgba(206,130,255,0.15); color:var(--accent5); }
+.match-item.matched { border-color:var(--accent); background:rgba(88,204,2,0.12); color:#7be338; pointer-events:none; }
+.match-item.wrong-match { border-color:var(--accent3); animation:shake 0.3s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+/* Word arrangement */
+.answer-row { display:flex; flex-wrap:wrap; gap:7px; min-height:46px; padding:10px; background:rgba(28,176,246,0.05); border-radius:var(--radius-sm); border:2px solid var(--accent4); margin-bottom:8px; }
+.word-bank { display:flex; flex-wrap:wrap; gap:7px; min-height:46px; padding:10px; background:var(--surface2); border-radius:var(--radius-sm); border:2px dashed var(--border); }
+.word-token { background:var(--surface); border:2px solid var(--border); border-radius:7px; padding:7px 12px; font-family:'Space Mono',monospace; font-size:13px; font-weight:700; cursor:pointer; transition:all 0.15s; color:var(--text); user-select:none; }
+.word-token:hover { border-color:var(--accent4); color:var(--accent4); transform:translateY(-2px); }
+.word-token.used { opacity:0.3; pointer-events:none; }
+.answer-token { background:rgba(28,176,246,0.15); border:2px solid var(--accent4); border-radius:7px; padding:7px 12px; font-family:'Space Mono',monospace; font-size:13px; font-weight:700; cursor:pointer; color:var(--accent4); user-select:none; transition:all 0.15s; }
+.answer-token:hover { background:rgba(255,75,75,0.15); border-color:var(--accent3); color:#ff8080; }
+
+/* Feedback */
+.feedback-panel { border-radius:var(--radius); padding:18px 22px; animation:slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+@keyframes slideUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.feedback-panel.correct-panel { background:rgba(88,204,2,0.1); border:2px solid rgba(88,204,2,0.4); }
+.feedback-panel.wrong-panel { background:rgba(255,75,75,0.1); border:2px solid rgba(255,75,75,0.4); }
+.feedback-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.feedback-icon { font-size:26px; }
+.feedback-title { font-size:18px; font-weight:900; }
+.feedback-panel.correct-panel .feedback-title { color:var(--accent); }
+.feedback-panel.wrong-panel .feedback-title { color:var(--accent3); }
+.feedback-correct-answer { background:var(--surface2); border-radius:var(--radius-sm); padding:10px 14px; margin-bottom:10px; font-family:'Space Mono',monospace; font-size:15px; font-weight:700; color:var(--accent4); border-left:4px solid var(--accent4); }
+.feedback-info { font-size:13px; color:var(--text2); line-height:1.7; }
+.feedback-info strong { color:var(--text); }
+.feedback-pron { display:inline-block; background:rgba(28,176,246,0.1); border-radius:6px; padding:3px 10px; color:var(--accent4); font-size:13px; margin-top:4px; }
+.feedback-motivation { font-size:14px; font-weight:700; color:var(--accent2); margin-top:8px; }
+
+/* Footer */
+.game-footer { padding:14px 18px; max-width:660px; margin:0 auto; width:100%; position:sticky; bottom:0; background:var(--bg); border-top:2px solid var(--border); }
+.btn-check { width:100%; background:var(--accent5); color:#fff; box-shadow:0 4px 0 #7a2faa; font-size:17px; padding:17px; border-radius:var(--radius-sm); font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; border:none; transition:all 0.15s; }
+.btn-check:hover { filter:brightness(1.1); }
+.btn-check:active { transform:translateY(3px); box-shadow:none; }
+.btn-check:disabled { background:var(--border); color:var(--text3); box-shadow:none; cursor:not-allowed; }
+.btn-next { width:100%; background:var(--accent4); color:#fff; box-shadow:0 4px 0 #0a6b9a; font-size:17px; padding:17px; border-radius:var(--radius-sm); font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; border:none; transition:all 0.15s; display:none; }
+.btn-next:hover { filter:brightness(1.1); }
+.btn-next:active { transform:translateY(3px); box-shadow:none; }
+
+/* Match special footer */
+.match-info { text-align:center; font-size:14px; color:var(--text3); font-weight:600; padding:12px; }
+
+/* ===== STATS / RANKING ===== */
+#stats-screen, #ranking-screen { background:var(--bg); }
+.page-header { padding:22px 20px 14px; display:flex; align-items:center; gap:12px; border-bottom:2px solid var(--border); }
+.page-title { font-size:26px; font-weight:900; flex:1; }
+.page-body { flex:1; padding:22px 20px; max-width:580px; margin:0 auto; width:100%; overflow-y:auto; }
+
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:22px; }
+.stat-card { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:14px; text-align:center; }
+.stat-card-icon { font-size:28px; margin-bottom:6px; }
+.stat-card-value { font-size:26px; font-weight:900; }
+.stat-card-label { font-size:11px; color:var(--text3); font-weight:700; text-transform:uppercase; margin-top:3px; }
+
+.achievements-title { font-size:18px; font-weight:900; margin-bottom:14px; }
+.achievements-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:22px; }
+.achievement { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px 8px; text-align:center; transition:all 0.2s; }
+.achievement.unlocked { border-color:var(--accent2); background:rgba(255,217,0,0.05); }
+.achievement-icon { font-size:26px; margin-bottom:5px; filter:grayscale(100%) opacity(0.3); }
+.achievement.unlocked .achievement-icon { filter:none; }
+.achievement-name { font-size:10px; font-weight:700; color:var(--text3); }
+.achievement.unlocked .achievement-name { color:var(--text2); }
+
+.cat-progress-title { font-size:18px; font-weight:900; margin-bottom:14px; }
+.cat-progress-item { display:flex; align-items:center; gap:10px; background:var(--surface); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:8px; }
+.cat-progress-icon { font-size:22px; }
+.cat-progress-info { flex:1; }
+.cat-progress-name { font-size:13px; font-weight:800; margin-bottom:4px; }
+.cat-progress-bar-wrap { background:var(--border); border-radius:20px; height:6px; overflow:hidden; }
+.cat-progress-bar-fill { height:100%; background:linear-gradient(90deg,var(--accent5),var(--accent4)); border-radius:20px; }
+.cat-progress-num { font-size:12px; font-weight:900; color:var(--accent5); }
+
+/* ranking */
+.podium { display:flex; align-items:flex-end; justify-content:center; gap:8px; margin-bottom:28px; }
+.podium-place { display:flex; flex-direction:column; align-items:center; gap:7px; }
+.podium-avatar { width:54px; height:54px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:26px; border:3px solid; }
+.podium-1 .podium-avatar { border-color:#ffd900; background:rgba(255,217,0,0.15); }
+.podium-2 .podium-avatar { border-color:#aaa; background:rgba(170,170,170,0.1); }
+.podium-3 .podium-avatar { border-color:#cd7f32; background:rgba(205,127,50,0.1); }
+.podium-name { font-size:12px; font-weight:700; color:var(--text2); text-align:center; }
+.podium-score { font-size:13px; font-weight:900; }
+.podium-1 .podium-score { color:var(--accent2); }
+.podium-2 .podium-score { color:#aaa; }
+.podium-3 .podium-score { color:#cd7f32; }
+.podium-block { border-radius:8px 8px 0 0; width:76px; display:flex; align-items:center; justify-content:center; font-size:18px; font-weight:900; }
+.podium-1 .podium-block { height:85px; background:rgba(255,217,0,0.12); border:2px solid rgba(255,217,0,0.3); }
+.podium-2 .podium-block { height:62px; background:rgba(170,170,170,0.07); border:2px solid rgba(170,170,170,0.2); }
+.podium-3 .podium-block { height:48px; background:rgba(205,127,50,0.07); border:2px solid rgba(205,127,50,0.2); }
+.rank-list { display:flex; flex-direction:column; gap:7px; }
+.rank-item { display:flex; align-items:center; gap:12px; background:var(--surface); border:2px solid var(--border); border-radius:var(--radius-sm); padding:12px 14px; }
+.rank-item.is-you { border-color:var(--accent5); background:rgba(206,130,255,0.05); }
+.rank-num { font-size:16px; font-weight:900; color:var(--text3); width:24px; text-align:center; }
+.rank-avatar { font-size:26px; }
+.rank-info { flex:1; }
+.rank-name { font-weight:800; font-size:14px; }
+.rank-level { font-size:11px; color:var(--text3); font-weight:600; }
+.rank-score { font-size:16px; font-weight:900; color:var(--accent2); }
+
+/* game over */
+#gameover-screen { background:var(--bg); align-items:center; justify-content:center; }
+.go-inner { text-align:center; padding:40px 20px; max-width:380px; }
+.go-icon { font-size:72px; margin-bottom:14px; animation:shake 0.5s ease-in-out; }
+.go-title { font-size:30px; font-weight:900; color:var(--accent3); margin-bottom:8px; }
+.go-text { font-size:15px; color:var(--text2); margin-bottom:22px; line-height:1.6; }
+.go-score { background:var(--surface); border:2px solid var(--border); border-radius:var(--radius); padding:14px 22px; margin-bottom:22px; }
+.go-score-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; }
+.go-score-label { font-size:13px; color:var(--text2); font-weight:600; }
+.go-score-value { font-size:16px; font-weight:900; color:var(--accent2); }
+.go-btns { display:flex; flex-direction:column; gap:10px; }
+.btn-restart { width:100%; background:var(--accent5); color:#fff; box-shadow:0 4px 0 #7a2faa; font-size:16px; padding:16px; border-radius:var(--radius-sm); font-family:'Nunito',sans-serif; font-weight:800; cursor:pointer; border:none; transition:all 0.15s; }
+.btn-menu { width:100%; background:var(--surface); color:var(--text2); border:2px solid var(--border); font-size:15px; padding:14px; border-radius:var(--radius-sm); font-family:'Nunito',sans-serif; font-weight:700; cursor:pointer; transition:all 0.15s; }
+.btn-menu:hover { color:var(--text); border-color:var(--accent4); }
+
+/* floaty */
+.xp-popup { position:fixed; top:80px; right:18px; background:var(--accent2); color:#1a1d2e; font-weight:900; font-size:16px; padding:8px 18px; border-radius:20px; pointer-events:none; z-index:100; animation:xpFloat 1.5s ease-out forwards; }
+@keyframes xpFloat { 0%{opacity:0;transform:translateY(0)} 20%{opacity:1} 80%{opacity:1;transform:translateY(-40px)} 100%{opacity:0;transform:translateY(-60px)} }
+.streak-milestone { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:72px; z-index:300; pointer-events:none; animation:streakBurst 1.5s ease-out forwards; text-align:center; white-space:nowrap; }
+@keyframes streakBurst { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.3)} 30%{opacity:1;transform:translate(-50%,-50%) scale(1.3)} 60%{opacity:1;transform:translate(-50%,-50%) scale(1)} 100%{opacity:0;transform:translate(-50%,-70%) scale(0.8)} }
+.toast { position:fixed; top:18px; left:50%; transform:translateX(-50%); background:var(--surface2); border:2px solid var(--border); border-radius:20px; padding:10px 22px; font-weight:800; font-size:14px; z-index:200; animation:toastAnim 2.5s ease forwards; white-space:nowrap; }
+@keyframes toastAnim { 0%{opacity:0;transform:translateX(-50%) translateY(-10px)} 15%{opacity:1;transform:translateX(-50%) translateY(0)} 70%{opacity:1} 100%{opacity:0;transform:translateX(-50%) translateY(-10px)} }
+
+::-webkit-scrollbar { width:5px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+@media(max-width:480px) { .choices-grid{grid-template-columns:1fr} .word-main{font-size:28px} }
+
+/* ===== STUDY SCREEN ===== */
+#study-screen { background: var(--bg); }
+
+.study-header {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.study-header-info { flex: 1; }
+.study-header-title { font-size: 18px; font-weight: 900; line-height: 1.2; }
+.study-header-sub { font-size: 12px; color: var(--text3); font-weight: 600; margin-top: 2px; }
+
+.study-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px 0;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Search bar */
+.study-search-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
+.study-search {
+  width: 100%;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 16px 10px 40px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.study-search:focus { border-color: var(--accent5); }
+.study-search::placeholder { color: var(--text3); }
+.study-search-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  pointer-events: none;
+}
+
+/* Vocab table */
+.vocab-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+.vocab-table thead tr {
+  background: var(--surface2);
+  border-bottom: 2px solid var(--border);
+}
+.vocab-table thead th {
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text3);
+}
+.vocab-table thead th:first-child { border-radius: 8px 0 0 0; }
+.vocab-table thead th:last-child { border-radius: 0 8px 0 0; }
+
+.vocab-row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.12s;
+  cursor: default;
+}
+.vocab-row:hover { background: rgba(206,130,255,0.06); }
+.vocab-row:last-child { border-bottom: none; }
+
+.vocab-row td {
+  padding: 11px 14px;
+  vertical-align: middle;
+}
+
+.cell-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text3);
+  width: 32px;
+  text-align: center;
+}
+
+.cell-en {
+  font-family: 'Space Mono', monospace;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cell-pron {
+  font-size: 13px;
+  color: var(--accent4);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.cell-pt {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent2);
+}
+
+/* Card view for alphabet */
+.alphabet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.alphabet-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  text-align: center;
+  transition: all 0.15s;
+}
+.alphabet-card:hover { border-color: var(--accent5); background: rgba(206,130,255,0.08); }
+.alpha-letter { font-family: 'Space Mono', monospace; font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 4px; }
+.alpha-pron { font-size: 12px; color: var(--accent4); font-weight: 700; }
+
+/* Color swatches for cores category */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.color-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: all 0.15s;
+}
+.color-card:hover { transform: translateY(-2px); border-color: var(--border); }
+.color-swatch { height: 48px; width: 100%; }
+.color-card-body { padding: 8px 10px; }
+.color-en { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--text); }
+.color-pron { font-size: 10px; color: var(--accent4); font-style: italic; }
+.color-pt { font-size: 11px; color: var(--accent2); font-weight: 700; margin-top: 2px; }
+
+/* Color hex map */
+.color-hex-map {
+  Red: '#e74c3c', Yellow: '#f1c40f', Green: '#27ae60',
+}
+
+/* Study footer */
+.study-footer {
+  padding: 14px 18px;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
+  background: var(--bg);
+  border-top: 2px solid var(--border);
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  gap: 10px;
+}
+.btn-study-start {
+  flex: 1;
+  background: var(--accent5);
+  color: #fff;
+  box-shadow: 0 4px 0 #7a2faa;
+  font-size: 16px;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+.btn-study-start:hover { filter: brightness(1.1); }
+.btn-study-start:active { transform: translateY(3px); box-shadow: none; }
+.btn-study-back {
+  background: var(--surface);
+  color: var(--text2);
+  border: 2px solid var(--border);
+  font-size: 15px;
+  padding: 16px 20px;
+  border-radius: var(--radius-sm);
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-study-back:hover { color: var(--text); border-color: var(--accent4); }
+
+/* progress pill on category card */
+.cat-studied-badge {
+  font-size: 10px;
+  font-weight: 700;
+  background: rgba(88,204,2,0.15);
+  color: var(--accent);
+  border: 1px solid rgba(88,204,2,0.3);
+  border-radius: 10px;
+  padding: 2px 8px;
+  margin-top: 3px;
+  display: inline-block;
+}
+
+/* View toggle */
+.view-toggle {
+  display: flex;
+  gap: 6px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 14px;
+}
+.view-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text3);
+  font-family: 'Nunito', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 7px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.view-btn.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* Flashcard view */
+.flashcard-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0 20px;
+}
+.flashcard {
+  width: 100%;
+  max-width: 360px;
+  perspective: 800px;
+  margin-bottom: 18px;
+  cursor: pointer;
+}
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  transform-style: preserve-3d;
+  transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+}
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border: 2px solid var(--border);
+}
+.flashcard-front {
+  background: var(--surface);
+}
+.flashcard-back {
+  background: linear-gradient(135deg, rgba(206,130,255,0.1), rgba(28,176,246,0.1));
+  border-color: var(--accent5);
+  transform: rotateY(180deg);
+}
+.fc-word { font-family: 'Space Mono', monospace; font-size: 32px; font-weight: 700; color: var(--text); margin-bottom: 8px; text-align: center; }
+.fc-pron { font-size: 16px; color: var(--accent4); font-style: italic; text-align: center; }
+.fc-translation { font-size: 28px; font-weight: 900; color: var(--accent2); text-align: center; margin-bottom: 8px; }
+.fc-hint { font-size: 13px; color: var(--text3); font-weight: 600; }
+.fc-tap { font-size: 12px; color: var(--text3); font-weight: 600; }
+.flashcard-nav { display: flex; align-items: center; gap: 16px; }
+.fc-nav-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  width: 44px; height: 44px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: var(--text2);
+}
+.fc-nav-btn:hover { border-color: var(--accent5); color: var(--text); }
+.fc-counter { font-size: 14px; font-weight: 800; color: var(--text2); min-width: 60px; text-align: center; }
+
+@media(max-width:480px) {
+  .vocab-table thead th, .vocab-row td { padding: 9px 10px; }
+  .cell-en { font-size: 13px; }
+  .alphabet-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home-screen" class="screen active">
+  <div class="home-inner">
+    <div class="game-logo">📚</div>
+    <div class="game-title">VocabQuest</div>
+    <div class="game-subtitle">Vocabulário em Inglês</div>
+
+    <div class="home-stats">
+      <div class="home-stat"><div class="home-stat-value" id="home-level">1</div><div class="home-stat-label">Nível</div></div>
+      <div class="home-stat"><div class="home-stat-value" id="home-xp">0</div><div class="home-stat-label">XP Total</div></div>
+      <div class="home-stat"><div class="home-stat-value" id="home-streak">0</div><div class="home-stat-label">🔥 Streak</div></div>
+    </div>
+
+    <div class="section-label">Modo de Jogo</div>
+    <div class="mode-row">
+      <button class="mode-btn active" data-mode="choice"><span class="mode-icon">🎯</span>Múltipla Escolha</button>
+      <button class="mode-btn" data-mode="fill"><span class="mode-icon">✏️</span>Complete a Palavra</button>
+      <button class="mode-btn" data-mode="match"><span class="mode-icon">🔗</span>Combine Pares</button>
+      <button class="mode-btn" data-mode="mix"><span class="mode-icon">🔀</span>Modo Misto</button>
+    </div>
+
+    <div class="select-all-row">
+      <div class="section-label" style="margin:0">Categorias</div>
+      <div style="display:flex;gap:4px;">
+        <button class="btn-text" onclick="selectAllCats()">Selecionar todas</button>
+        <button class="btn-text" onclick="deselectAllCats()">Limpar</button>
+      </div>
+    </div>
+    <div class="categories-grid" id="categories-grid"></div>
+
+    <button class="btn-start" id="btn-start" onclick="startGame()" disabled>▶ Começar Treino</button>
+    <div class="home-nav">
+      <button class="btn-nav" onclick="showScreen('ranking-screen');renderRanking()">🏆 Ranking</button>
+      <button class="btn-nav" onclick="showScreen('stats-screen');renderStats()">📊 Stats</button>
+    </div>
+  </div>
+</div>
+
+<!-- STUDY SCREEN -->
+<div id="study-screen" class="screen">
+  <div class="study-header">
+    <button class="btn-back" onclick="showScreen('home-screen')">←</button>
+    <div class="study-header-info">
+      <div class="study-header-title" id="study-title">Dias da Semana</div>
+      <div class="study-header-sub" id="study-sub">7 palavras</div>
+    </div>
+  </div>
+  <div class="study-body" id="study-body"></div>
+  <div class="study-footer">
+    <button class="btn-study-back" onclick="showScreen('home-screen')">← Voltar</button>
+    <button class="btn-study-start" onclick="startFromStudy()">✅ Já estudei! Iniciar Treino</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div class="game-header">
+    <button class="btn-back" onclick="showScreen('home-screen')">←</button>
+    <div class="hud-lives" id="hud-lives"></div>
+    <div class="hud-streak"><span>🔥</span><span id="streak-count">0</span></div>
+    <div class="hud-xp">
+      <div class="xp-label" id="xp-label">XP: 0/100</div>
+      <div class="xp-bar-wrap"><div class="xp-bar-fill" id="xp-bar" style="width:0%"></div></div>
+    </div>
+    <div class="hud-level" id="hud-level">Lv.1</div>
+  </div>
+  <div class="game-body">
+    <div class="progress-top"><div class="progress-top-fill" id="progress-fill" style="width:0%"></div></div>
+    <div id="question-container"></div>
+    <div id="feedback-container" style="display:none"></div>
+  </div>
+  <div class="game-footer">
+    <button class="btn-check" id="btn-check" onclick="checkAnswer()" disabled>VERIFICAR</button>
+    <button class="btn-next" id="btn-next" onclick="nextQuestion()">CONTINUAR →</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="stats-screen" class="screen">
+  <div class="page-header">
+    <button class="btn-back" onclick="showScreen('home-screen')">←</button>
+    <div class="page-title">📊 Estatísticas</div>
+  </div>
+  <div class="page-body">
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="cat-progress-title">📂 Progresso por Categoria</div>
+    <div id="cat-progress-list"></div>
+    <div class="achievements-title">🎖 Conquistas</div>
+    <div class="achievements-grid" id="achievements-grid"></div>
+  </div>
+</div>
+
+<!-- RANKING -->
+<div id="ranking-screen" class="screen">
+  <div class="page-header">
+    <button class="btn-back" onclick="showScreen('home-screen')">←</button>
+    <div class="page-title">🏆 Ranking Semanal</div>
+  </div>
+  <div class="page-body">
+    <div class="podium" id="podium"></div>
+    <div class="rank-list" id="rank-list"></div>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div id="gameover-screen" class="screen">
+  <div class="go-inner">
+    <div class="go-icon">💔</div>
+    <div class="go-title">Sem Vidas!</div>
+    <div class="go-text">Não desista! Cada erro é uma chance de aprender. Revise e tente novamente!</div>
+    <div class="go-score">
+      <div class="go-score-row"><span class="go-score-label">Palavras respondidas</span><span class="go-score-value" id="go-total">0</span></div>
+      <div class="go-score-row"><span class="go-score-label">Acertos</span><span class="go-score-value" id="go-correct">0</span></div>
+      <div class="go-score-row"><span class="go-score-label">XP Ganho</span><span class="go-score-value" id="go-xp">0</span></div>
+      <div class="go-score-row"><span class="go-score-label">Maior Streak</span><span class="go-score-value" id="go-streak">0</span></div>
+    </div>
+    <div class="go-btns">
+      <button class="btn-restart" onclick="startGame()">🔄 Tentar Novamente</button>
+      <button class="btn-menu" onclick="showScreen('home-screen')">← Menu Principal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// ============= VOCABULARY DATABASE ==================
+// =====================================================
+
+const CATEGORIES = [
+  {
+    id: 'alfabeto',
+    name: 'Alfabeto',
+    icon: '🔤',
+    color: '#ce82ff',
+    words: [
+      {en:'A',pron:'EI',pt:'A'},{en:'B',pron:'BI',pt:'B'},{en:'C',pron:'CI',pt:'C'},
+      {en:'D',pron:'DI',pt:'D'},{en:'E',pron:'I',pt:'E'},{en:'F',pron:'ÉF',pt:'F'},
+      {en:'G',pron:'DJI',pt:'G'},{en:'H',pron:'EITCH',pt:'H'},{en:'I',pron:'AI',pt:'I'},
+      {en:'J',pron:'DJEI',pt:'J'},{en:'K',pron:'KEI',pt:'K'},{en:'L',pron:'EL',pt:'L'},
+      {en:'M',pron:'EM',pt:'M'},{en:'N',pron:'EN',pt:'N'},{en:'O',pron:'OU',pt:'O'},
+      {en:'P',pron:'PI',pt:'P'},{en:'Q',pron:'QUIU',pt:'Q'},{en:'R',pron:'AR',pt:'R'},
+      {en:'S',pron:'ES',pt:'S'},{en:'T',pron:'TI',pt:'T'},{en:'U',pron:'IU',pt:'U'},
+      {en:'V',pron:'VI',pt:'V'},{en:'W',pron:'DÂBLIU',pt:'W'},{en:'X',pron:'ÉCS',pt:'X'},
+      {en:'Y',pron:'UAI',pt:'Y'},{en:'Z',pron:'ZI',pt:'Z'}
+    ]
+  },
+  {
+    id: 'numeros',
+    name: 'Números',
+    icon: '🔢',
+    color: '#1cb0f6',
+    words: [
+      {en:'One',pron:'uón',pt:'1'},
+      {en:'Two',pron:'tchú',pt:'2'},
+      {en:'Three',pron:'thrii',pt:'3'},
+      {en:'Four',pron:'fór',pt:'4'},
+      {en:'Five',pron:'fáiv',pt:'5'},
+      {en:'Six',pron:'siks',pt:'6'},
+      {en:'Seven',pron:'séven',pt:'7'},
+      {en:'Eight',pron:'éigt',pt:'8'},
+      {en:'Nine',pron:'náin',pt:'9'},
+      {en:'Ten',pron:'tén',pt:'10'},
+      {en:'Eleven',pron:'elévên',pt:'11'},
+      {en:'Twelve',pron:'tuélv',pt:'12'},
+      {en:'Thirteen',pron:'tàrtiin',pt:'13'},
+      {en:'Fourteen',pron:'fórtiin',pt:'14'},
+      {en:'Fifteen',pron:'fiftiin',pt:'15'},
+      {en:'Sixteen',pron:'sikstiin',pt:'16'},
+      {en:'Seventeen',pron:'séventiin',pt:'17'},
+      {en:'Eighteen',pron:'éigtiin',pt:'18'},
+      {en:'Nineteen',pron:'náintiin',pt:'19'},
+      {en:'Twenty',pron:'tuéni',pt:'20'},
+      {en:'Twenty-one',pron:'tuéni uón',pt:'21'},
+      {en:'Twenty-two',pron:'tuéni tiú',pt:'22'},
+      {en:'Twenty-three',pron:'tuéni thrii',pt:'23'},
+      {en:'Twenty-four',pron:'tuéni fór',pt:'24'},
+      {en:'Twenty-five',pron:'tuéni fáiv',pt:'25'},
+      {en:'Twenty-six',pron:'tuéni siks',pt:'26'},
+      {en:'Twenty-seven',pron:'tuéni séven',pt:'27'},
+      {en:'Twenty-eight',pron:'tuéni éigt',pt:'28'},
+      {en:'Twenty-nine',pron:'tuéni náin',pt:'29'},
+      {en:'Thirty',pron:'tàrti',pt:'30'},
+      {en:'Thirty-one',pron:'tàrti uón',pt:'31'},
+      {en:'Thirty-two',pron:'tàrti tiú',pt:'32'},
+      {en:'Thirty-three',pron:'tàrti thrii',pt:'33'},
+      {en:'Thirty-four',pron:'tàrti fór',pt:'34'},
+      {en:'Thirty-five',pron:'tàrti fáiv',pt:'35'},
+      {en:'Thirty-six',pron:'tàrti siks',pt:'36'},
+      {en:'Thirty-seven',pron:'tàrti séven',pt:'37'},
+      {en:'Thirty-eight',pron:'tàrti éigt',pt:'38'},
+      {en:'Thirty-nine',pron:'tàrti náin',pt:'39'},
+      {en:'Forty',pron:'fórti',pt:'40'},
+      {en:'Fifty',pron:'fifti',pt:'50'},
+      {en:'Sixty',pron:'síksti',pt:'60'},
+      {en:'Seventy',pron:'séventi',pt:'70'},
+      {en:'Eighty',pron:'éigti',pt:'80'},
+      {en:'Ninety',pron:'náinti',pt:'90'},
+      {en:'One hundred',pron:'uón rándred',pt:'100'},
+      {en:'Two hundred',pron:'tchú rándred',pt:'200'},
+      {en:'Three hundred',pron:'thrii rándred',pt:'300'},
+      {en:'Four hundred',pron:'fór rándred',pt:'400'},
+      {en:'Five hundred',pron:'fáiv rándred',pt:'500'},
+      {en:'Six hundred',pron:'siks rándred',pt:'600'},
+      {en:'Seven hundred',pron:'séven rándred',pt:'700'},
+      {en:'Eight hundred',pron:'éigt rándred',pt:'800'},
+      {en:'Nine hundred',pron:'náin rándred',pt:'900'},
+      {en:'One thousand',pron:'uón tháuzand',pt:'1.000'},
+      {en:'Ten thousand',pron:'tén tháuzand',pt:'10.000'},
+      {en:'Twenty thousand',pron:'tuéni tháuzand',pt:'20.000'},
+      {en:'Thirty thousand',pron:'tàrti tháuzand',pt:'30.000'},
+      {en:'Forty thousand',pron:'fórti tháuzand',pt:'40.000'},
+      {en:'Fifty thousand',pron:'fifti tháuzand',pt:'50.000'},
+      {en:'Sixty thousand',pron:'síksti tháuzand',pt:'60.000'},
+      {en:'Seventy thousand',pron:'séventi tháuzand',pt:'70.000'},
+      {en:'Eighty thousand',pron:'éigti tháuzand',pt:'80.000'},
+      {en:'Ninety thousand',pron:'náinti tháuzand',pt:'90.000'},
+      {en:'One hundred thousand',pron:'uón rándred tháuzand',pt:'100.000'},
+      {en:'Two hundred thousand',pron:'tchú rándred tháuzand',pt:'200.000'},
+      {en:'Three hundred thousand',pron:'thrii rándred tháuzand',pt:'300.000'},
+      {en:'Four hundred thousand',pron:'fór rándred tháuzand',pt:'400.000'},
+      {en:'Five hundred thousand',pron:'fáiv rándred tháuzand',pt:'500.000'},
+      {en:'Six hundred thousand',pron:'siks rándred tháuzand',pt:'600.000'},
+      {en:'Seven hundred thousand',pron:'séven rándred tháuzand',pt:'700.000'},
+      {en:'Eight hundred thousand',pron:'éigt rándred tháuzand',pt:'800.000'},
+      {en:'Nine hundred thousand',pron:'náin rándred tháuzand',pt:'900.000'},
+      {en:'One million',pron:'uón mílion',pt:'1.000.000'}
+    ]
+  },
+  {
+    id: 'dias',
+    name: 'Dias da Semana',
+    icon: '📅',
+    color: '#ffd900',
+    words: [
+      {en:'Sunday',pron:'sán-dei',pt:'Domingo'},
+      {en:'Monday',pron:'mán-dei',pt:'Segunda-feira'},
+      {en:'Tuesday',pron:'tiúz-dei',pt:'Terça-feira'},
+      {en:'Wednesday',pron:'uénes-dei',pt:'Quarta-feira'},
+      {en:'Thursday',pron:'tàrz-dei',pt:'Quinta-feira'},
+      {en:'Friday',pron:'frái-dei',pt:'Sexta-feira'},
+      {en:'Saturday',pron:'sé-tur-dei',pt:'Sábado'}
+    ]
+  },
+  {
+    id: 'meses',
+    name: 'Meses do Ano',
+    icon: '🗓️',
+    color: '#ff9600',
+    words: [
+      {en:'January',pron:'gian.iu.e.ri',pt:'Janeiro'},
+      {en:'February',pron:'fe.bru.e.ri',pt:'Fevereiro'},
+      {en:'March',pron:'ma:tc',pt:'Março'},
+      {en:'April',pron:'ei.pril',pt:'Abril'},
+      {en:'May',pron:'mei',pt:'Maio'},
+      {en:'June',pron:'giun',pt:'Junho'},
+      {en:'July',pron:'giu.lai',pt:'Julho'},
+      {en:'August',pron:'o:.gust',pt:'Agosto'},
+      {en:'September',pron:'sep.tem.ba',pt:'Setembro'},
+      {en:'October',pron:'ok.tou.ba',pt:'Outubro'},
+      {en:'November',pron:'nou.vem.ba',pt:'Novembro'},
+      {en:'December',pron:'di.sem.ba',pt:'Dezembro'}
+    ]
+  },
+  {
+    id: 'estacoes',
+    name: 'Estações do Ano',
+    icon: '🌸',
+    color: '#58cc02',
+    words: [
+      {en:'Summer',pron:'sâmmâr',pt:'Verão'},
+      {en:'Winter',pron:'uintâr',pt:'Inverno'},
+      {en:'Spring',pron:'spring',pt:'Primavera'},
+      {en:'Autumn',pron:'ótâm',pt:'Outono'},
+      {en:'Rainy season',pron:'réini sísân',pt:'Estação chuvosa'},
+      {en:'Dry season',pron:'drái sísân',pt:'Estação seca'},
+      {en:'Hot season',pron:'hót sísân',pt:'Estação quente'},
+      {en:'Cold season',pron:'kóuld sísân',pt:'Estação fria'},
+      {en:'Early spring',pron:'árli spring',pt:'Início da primavera'},
+      {en:'Late summer',pron:'lêit sâmmâr',pt:'Final do verão'},
+      {en:'Midwinter',pron:'míduintâr',pt:'Meio do inverno'},
+      {en:'Snow season',pron:'snôu sísân',pt:'Temporada de neve'},
+      {en:'Holiday season',pron:'hólidei sísân',pt:'Temporada de férias'},
+      {en:'This season',pron:'dhis sísân',pt:'Esta estação'},
+      {en:'Next season',pron:'nêkst sísân',pt:'Próxima estação'}
+    ]
+  },
+  {
+    id: 'cores',
+    name: 'Cores',
+    icon: '🎨',
+    color: '#ff4b4b',
+    words: [
+      {en:'Red',pron:'réd',pt:'Vermelho'},
+      {en:'Yellow',pron:'iélou',pt:'Amarelo'},
+      {en:'Green',pron:'grín',pt:'Verde'},
+      {en:'Dark green',pron:'darqui grín',pt:'Verde escuro'},
+      {en:'Blue',pron:'blú',pt:'Azul'},
+      {en:'Dark blue',pron:'darqui blú',pt:'Azul escuro'},
+      {en:'Lilac',pron:'láilac',pt:'Lilás'},
+      {en:'Purple',pron:'pàrpou',pt:'Roxo'},
+      {en:'Pink',pron:'pink',pt:'Rosa'},
+      {en:'Silver',pron:'sílver',pt:'Prata'},
+      {en:'Orange',pron:'órandj',pt:'Laranja'},
+      {en:'Brown',pron:'bráun',pt:'Marrom'},
+      {en:'Beige',pron:'beije',pt:'Bege'},
+      {en:'Black',pron:'blékui',pt:'Preto'},
+      {en:'White',pron:'uáit',pt:'Branco'},
+      {en:'Grey',pron:'grey',pt:'Cinza'},
+      {en:'Turquoise',pron:'turkóiz',pt:'Turquesa'},
+      {en:'Gold',pron:'gôld',pt:'Dourado'},
+      {en:'Light blue',pron:'lâit blú',pt:'Azul claro'},
+      {en:'Light green',pron:'lâit grín',pt:'Verde claro'}
+    ]
+  },
+  {
+    id: 'familia',
+    name: 'Família e Amigos',
+    icon: '👨‍👩‍👧',
+    color: '#ff9600',
+    words: [
+      {en:'Family',pron:'fémili',pt:'Família'},
+      {en:'Father',pron:'fá-der',pt:'Pai'},
+      {en:'Mother',pron:'má-der',pt:'Mãe'},
+      {en:'Parents',pron:'pér-ents',pt:'Pais'},
+      {en:'Son',pron:'sân',pt:'Filho'},
+      {en:'Daughter',pron:'dó-ter',pt:'Filha'},
+      {en:'Children',pron:'tchíl-dren',pt:'Filhos/Crianças'},
+      {en:'Brother',pron:'brá-der',pt:'Irmão'},
+      {en:'Sister',pron:'sís-ter',pt:'Irmã'},
+      {en:'Siblings',pron:'síb-lings',pt:'Irmãos'},
+      {en:'Husband',pron:'rás-band',pt:'Marido'},
+      {en:'Wife',pron:'uáif',pt:'Esposa'},
+      {en:'Grandfather',pron:'grând-fá-der',pt:'Avô'},
+      {en:'Grandmother',pron:'grând-má-der',pt:'Avó'},
+      {en:'Grandparents',pron:'grând-pér-ents',pt:'Avós'},
+      {en:'Uncle',pron:'ân-kol',pt:'Tio'},
+      {en:'Aunt',pron:'ênt',pt:'Tia'},
+      {en:'Cousin',pron:'ká-zan',pt:'Primo(a)'},
+      {en:'Nephew',pron:'né-fiu',pt:'Sobrinho'},
+      {en:'Niece',pron:'nís',pt:'Sobrinha'},
+      {en:'Grandson',pron:'grând-sân',pt:'Neto'},
+      {en:'Granddaughter',pron:'grând-dó-ter',pt:'Neta'},
+      {en:'Father-in-law',pron:'fá-der in ló',pt:'Sogro'},
+      {en:'Mother-in-law',pron:'má-der in ló',pt:'Sogra'},
+      {en:'Brother-in-law',pron:'brá-der in ló',pt:'Cunhado'},
+      {en:'Sister-in-law',pron:'sís-ter in ló',pt:'Cunhada'},
+      {en:'Stepfather',pron:'stép-fá-der',pt:'Padrasto'},
+      {en:'Stepmother',pron:'stép-má-der',pt:'Madrasta'},
+      {en:'Stepson',pron:'stép-sân',pt:'Enteado'},
+      {en:'Stepdaughter',pron:'stép-dó-ter',pt:'Enteada'},
+      {en:'Relative',pron:'ré-la-tiv',pt:'Parente'},
+      {en:'Child',pron:'tcháild',pt:'Criança/filho'},
+      {en:'Baby',pron:'béibi',pt:'Bebê'},
+      {en:'Friend',pron:'frend',pt:'Amigo/a'},
+      {en:'Best friend',pron:'bést frend',pt:'Melhor amigo/a'},
+      {en:'Neighbor',pron:'néibâr',pt:'Vizinho/a'}
+    ]
+  },
+  {
+    id: 'objetos',
+    name: 'Objetos do Dia a Dia',
+    icon: '🎒',
+    color: '#1cb0f6',
+    words: [
+      {en:'Backpack',pron:'bákpak',pt:'Mochila'},
+      {en:'Pencil',pron:'pénsil',pt:'Lápis'},
+      {en:'Pen',pron:'pén',pt:'Caneta'},
+      {en:'Book',pron:'búk',pt:'Livro'},
+      {en:'Notebook',pron:'nótbuk',pt:'Caderno'},
+      {en:'Eraser',pron:'iréizâr',pt:'Borracha'},
+      {en:'Scissors',pron:'sízârs',pt:'Tesoura'},
+      {en:'Ruler',pron:'rúlâr',pt:'Régua'},
+      {en:'Keys',pron:'kíiz',pt:'Chaves'},
+      {en:'Wallet',pron:'uólit',pt:'Carteira'},
+      {en:'Phone',pron:'fóun',pt:'Celular'},
+      {en:'Computer',pron:'kompíutâr',pt:'Computador'},
+      {en:'Umbrella',pron:'âmbréla',pt:'Guarda-chuva'},
+      {en:'Watch',pron:'uótch',pt:'Relógio'},
+      {en:'Glasses',pron:'glásiz',pt:'Óculos'},
+      {en:'Bag',pron:'bág',pt:'Bolsa'},
+      {en:'Bottle',pron:'bótol',pt:'Garrafa'},
+      {en:'Chair',pron:'tchér',pt:'Cadeira'},
+      {en:'Table',pron:'téibol',pt:'Mesa'},
+      {en:'Door',pron:'dór',pt:'Porta'},
+      {en:'Window',pron:'uíndou',pt:'Janela'},
+      {en:'Lamp',pron:'lámp',pt:'Lâmpada'},
+      {en:'Clock',pron:'klók',pt:'Relógio (parede)'},
+      {en:'Mirror',pron:'mírâr',pt:'Espelho'},
+      {en:'Towel',pron:'táuel',pt:'Toalha'}
+    ]
+  },
+  {
+    id: 'corpo',
+    name: 'Partes do Corpo',
+    icon: '🫀',
+    color: '#ff4b4b',
+    words: [
+      {en:'Head',pron:'héd',pt:'Cabeça'},
+      {en:'Hair',pron:'hér',pt:'Cabelo'},
+      {en:'Face',pron:'féis',pt:'Rosto'},
+      {en:'Eyes',pron:'áiz',pt:'Olhos'},
+      {en:'Ear',pron:'ír',pt:'Orelha'},
+      {en:'Nose',pron:'nóuz',pt:'Nariz'},
+      {en:'Mouth',pron:'máuth',pt:'Boca'},
+      {en:'Teeth',pron:'títh',pt:'Dentes'},
+      {en:'Tongue',pron:'tâng',pt:'Língua'},
+      {en:'Neck',pron:'nék',pt:'Pescoço'},
+      {en:'Shoulder',pron:'shóuldâr',pt:'Ombro'},
+      {en:'Arm',pron:'árm',pt:'Braço'},
+      {en:'Elbow',pron:'élbou',pt:'Cotovelo'},
+      {en:'Hand',pron:'hánd',pt:'Mão'},
+      {en:'Finger',pron:'fíngâr',pt:'Dedo (mão)'},
+      {en:'Nail',pron:'néil',pt:'Unha'},
+      {en:'Chest',pron:'tchést',pt:'Peito'},
+      {en:'Back',pron:'bák',pt:'Costas'},
+      {en:'Stomach',pron:'stâmâk',pt:'Estômago/Barriga'},
+      {en:'Leg',pron:'lég',pt:'Perna'},
+      {en:'Knee',pron:'ní:',pt:'Joelho'},
+      {en:'Foot',pron:'fút',pt:'Pé'},
+      {en:'Toe',pron:'tóu',pt:'Dedo (pé)'},
+      {en:'Heart',pron:'hárt',pt:'Coração'},
+      {en:'Spine',pron:'spáin',pt:'Coluna'}
+    ]
+  },
+  {
+    id: 'casa',
+    name: 'Cômodos da Casa e Mobília',
+    icon: '🏠',
+    color: '#58cc02',
+    words: [
+      {en:'House',pron:'háus',pt:'Casa'},
+      {en:'Apartment',pron:'apártment',pt:'Apartamento'},
+      {en:'Living room',pron:'líving rúm',pt:'Sala de estar'},
+      {en:'Bedroom',pron:'bédrúm',pt:'Quarto'},
+      {en:'Bathroom',pron:'báthrum',pt:'Banheiro'},
+      {en:'Kitchen',pron:'kítchen',pt:'Cozinha'},
+      {en:'Dining room',pron:'dáining rúm',pt:'Sala de jantar'},
+      {en:'Garage',pron:'garádj',pt:'Garagem'},
+      {en:'Garden',pron:'gárden',pt:'Jardim'},
+      {en:'Balcony',pron:'bálkoni',pt:'Varanda'},
+      {en:'Stairs',pron:'stérs',pt:'Escadas'},
+      {en:'Hallway',pron:'hólwei',pt:'Corredor'},
+      {en:'Sofa',pron:'sófa',pt:'Sofá'},
+      {en:'Armchair',pron:'ármtchér',pt:'Poltrona'},
+      {en:'Bed',pron:'béd',pt:'Cama'},
+      {en:'Wardrobe',pron:'uórdrob',pt:'Guarda-roupa'},
+      {en:'Shelf',pron:'shélf',pt:'Prateleira'},
+      {en:'Refrigerator',pron:'rifríjerâtor',pt:'Geladeira'},
+      {en:'Stove',pron:'stóuv',pt:'Fogão'},
+      {en:'Microwave',pron:'máikrouweiv',pt:'Micro-ondas'},
+      {en:'Sink',pron:'síngk',pt:'Pia'},
+      {en:'Bathtub',pron:'báththâb',pt:'Banheira'},
+      {en:'Shower',pron:'sháuâr',pt:'Chuveiro'},
+      {en:'Toilet',pron:'tóilit',pt:'Vaso sanitário'},
+      {en:'Curtain',pron:'kértin',pt:'Cortina'},
+      {en:'Rug',pron:'râg',pt:'Tapete'},
+      {en:'Pillow',pron:'pílou',pt:'Travesseiro'},
+      {en:'Blanket',pron:'bláengkit',pt:'Cobertor'}
+    ]
+  }
+];
+
+// =====================================================
+// ============= GAME STATE ===========================
+// =====================================================
+let state = {
+  lives: 5, maxLives: 5,
+  xp: 0, level: 1,
+  streak: 0, maxStreak: 0,
+  totalAnswered: 0, totalCorrect: 0,
+  sessionXp: 0,
+  unlockedAchievements: [],
+  catStats: {}, // per category correct count
+  selectedCats: [],
+  currentMode: 'choice',
+  currentQuestion: null,
+  questionCount: 0,
+  answered: false,
+  selectedChoiceValue: null,
+  matchState: null,
+  wordArrangeState: null,
+};
+
+function xpForLevel(lvl) { return lvl * 100; }
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('vocabquest_v1') || '{}');
+    state.xp = s.xp || 0;
+    state.level = s.level || 1;
+    state.maxStreak = s.maxStreak || 0;
+    state.totalAnswered = s.totalAnswered || 0;
+    state.totalCorrect = s.totalCorrect || 0;
+    state.unlockedAchievements = s.unlockedAchievements || [];
+    state.catStats = s.catStats || {};
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('vocabquest_v1', JSON.stringify({
+    xp: state.xp, level: state.level, maxStreak: state.maxStreak,
+    totalAnswered: state.totalAnswered, totalCorrect: state.totalCorrect,
+    unlockedAchievements: state.unlockedAchievements, catStats: state.catStats,
+  }));
+}
+
+// =====================================================
+// ============= QUESTION GENERATOR ===================
+// =====================================================
+
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function getActiveWords() {
+  let words = [];
+  state.selectedCats.forEach(catId => {
+    const cat = CATEGORIES.find(c => c.id === catId);
+    if (cat) words.push(...cat.words.map(w => ({...w, catId, catName: cat.name, catIcon: cat.icon, catColor: cat.color})));
+  });
+  return words;
+}
+
+function generateQuestion() {
+  const pool = getActiveWords();
+  if (pool.length < 4) return null;
+
+  const word = rand(pool);
+  let mode = state.currentMode;
+  if (mode === 'mix') {
+    // Alfabeto is better for fill/choice, match needs >= 4 words from same cat
+    const catWords = pool.filter(w => w.catId === word.catId);
+    const opts = ['choice', 'fill'];
+    if (catWords.length >= 6) opts.push('match');
+    mode = rand(opts);
+  }
+
+  if (mode === 'match') {
+    return generateMatchQuestion(pool, word);
+  }
+
+  // Decide direction: EN→PT or PT→EN (50/50)
+  const direction = Math.random() > 0.5 ? 'en_to_pt' : 'pt_to_en';
+
+  if (mode === 'choice') {
+    return generateChoiceQuestion(pool, word, direction);
+  } else {
+    return generateFillQuestion(word, direction);
+  }
+}
+
+function generateChoiceQuestion(pool, word, direction) {
+  // Build distractors from same category or other words
+  const distractors = pool.filter(w => w.en !== word.en);
+  const shuffledD = shuffleArray(distractors).slice(0, 3);
+
+  let correct, choices;
+  let instruction, displayWord, displayPron;
+
+  if (direction === 'en_to_pt') {
+    correct = word.pt;
+    instruction = `O que significa <strong>"${word.en}"</strong> em português?`;
+    displayWord = word.en;
+    displayPron = word.pron;
+    choices = shuffleArray([correct, ...shuffledD.map(d => d.pt)]);
+  } else {
+    correct = word.en;
+    instruction = `Como se diz <strong>"${word.pt}"</strong> em inglês?`;
+    displayWord = word.pt;
+    displayPron = null;
+    choices = shuffleArray([correct, ...shuffledD.map(d => d.en)]);
+  }
+
+  return {
+    id: Math.random(), type: 'choice', direction,
+    word, instruction, displayWord, displayPron,
+    correct, choices,
+    catName: word.catName, catIcon: word.catIcon, catColor: word.catColor, catId: word.catId,
+  };
+}
+
+function generateFillQuestion(word, direction) {
+  let instruction, displayWord, displayPron, correct, hint;
+
+  if (direction === 'en_to_pt') {
+    instruction = `Traduza para português: <strong>${word.en}</strong>`;
+    displayWord = word.en;
+    displayPron = word.pron;
+    correct = word.pt;
+    hint = word.pt[0].toLowerCase();
+  } else {
+    instruction = `Como se escreve em inglês: <strong>${word.pt}</strong>`;
+    displayWord = word.pt;
+    displayPron = null;
+    correct = word.en;
+    hint = word.en[0].toLowerCase();
+  }
+
+  return {
+    id: Math.random(), type: 'fill', direction,
+    word, instruction, displayWord, displayPron,
+    correct, hint,
+    catName: word.catName, catIcon: word.catIcon, catColor: word.catColor, catId: word.catId,
+  };
+}
+
+function generateMatchQuestion(pool, anchorWord) {
+  // Pick 4-5 words from same or mixed categories
+  const samecat = pool.filter(w => w.catId === anchorWord.catId);
+  const source = samecat.length >= 4 ? samecat : pool;
+  const selected = shuffleArray(source).slice(0, Math.min(5, source.length));
+
+  return {
+    id: Math.random(), type: 'match',
+    word: anchorWord,
+    matchWords: selected,
+    catName: anchorWord.catName, catIcon: anchorWord.catIcon, catColor: anchorWord.catColor, catId: anchorWord.catId,
+    instruction: 'Combine cada palavra inglesa com sua tradução em português:',
+  };
+}
+
+// =====================================================
+// ============= RENDERING ============================
+// =====================================================
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderCategoryList() {
+  const grid = document.getElementById('categories-grid');
+  grid.innerHTML = CATEGORIES.map(cat => {
+    const count = cat.words.length;
+    return `
+      <div class="category-card" id="cat-${cat.id}" data-id="${cat.id}">
+        <span class="cat-icon" style="cursor:pointer" onclick="openStudyScreen('${cat.id}')">${cat.icon}</span>
+        <div class="cat-info" style="cursor:pointer" onclick="openStudyScreen('${cat.id}')">
+          <div class="cat-name">${cat.name}</div>
+          <div class="cat-count" id="cat-sub-${cat.id}">${count} palavras &bull; <span style="color:var(--accent4)">ver vocabulário →</span></div>
+        </div>
+        <span id="cat-check-${cat.id}" style="font-size:22px;cursor:pointer;min-width:28px;text-align:center;" onclick="toggleCat('${cat.id}');event.stopPropagation();">☐</span>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleCat(id) {
+  const idx = state.selectedCats.indexOf(id);
+  if (idx >= 0) state.selectedCats.splice(idx, 1);
+  else state.selectedCats.push(id);
+
+  const selected = state.selectedCats.includes(id);
+  document.getElementById(`cat-${id}`).classList.toggle('selected', selected);
+  const chk = document.getElementById(`cat-check-${id}`);
+  if (chk) chk.textContent = selected ? '✅' : '☐';
+  document.getElementById('btn-start').disabled = state.selectedCats.length === 0;
+}
+
+function selectAllCats() {
+  state.selectedCats = CATEGORIES.map(c => c.id);
+  CATEGORIES.forEach(c => {
+    document.getElementById(`cat-${c.id}`)?.classList.add('selected');
+    const chk = document.getElementById(`cat-check-${c.id}`);
+    if (chk) chk.textContent = '✅';
+  });
+  document.getElementById('btn-start').disabled = false;
+}
+
+function deselectAllCats() {
+  state.selectedCats = [];
+  CATEGORIES.forEach(c => {
+    document.getElementById(`cat-${c.id}`)?.classList.remove('selected');
+    const chk = document.getElementById(`cat-check-${c.id}`);
+    if (chk) chk.textContent = '☐';
+  });
+  document.getElementById('btn-start').disabled = true;
+}
+
+function startGame() {
+  if (state.selectedCats.length === 0) return;
+  state.lives = state.maxLives;
+  state.streak = 0;
+  state.sessionXp = 0;
+  state.questionCount = 0;
+  state.answered = false;
+  state.selectedChoiceValue = null;
+  updateHUD();
+  showScreen('game-screen');
+  renderNextQuestion();
+}
+
+function renderNextQuestion() {
+  state.answered = false;
+  state.selectedChoiceValue = null;
+  state.matchState = null;
+  state.wordArrangeState = null;
+  state.currentQuestion = generateQuestion();
+  state.questionCount++;
+
+  const q = state.currentQuestion;
+  if (!q) { showScreen('home-screen'); return; }
+
+  const container = document.getElementById('question-container');
+  const feedbackEl = document.getElementById('feedback-container');
+  feedbackEl.style.display = 'none';
+  feedbackEl.innerHTML = '';
+
+  // Progress
+  document.getElementById('progress-fill').style.width = Math.min(state.questionCount / 20 * 100, 100) + '%';
+
+  let html = `
+    <div class="question-card">
+      <div class="cat-tag" style="color:${q.catColor};border-color:${q.catColor}33;background:${q.catColor}18;">
+        ${q.catIcon} ${q.catName}
+      </div>
+      <div class="q-instruction">${q.instruction}</div>
+  `;
+
+  if (q.type === 'choice') html += renderChoice(q);
+  else if (q.type === 'fill') html += renderFill(q);
+  else if (q.type === 'match') html += renderMatch(q);
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  // Footer buttons
+  const btnCheck = document.getElementById('btn-check');
+  const btnNext = document.getElementById('btn-next');
+  btnNext.style.display = 'none';
+  btnCheck.style.display = 'block';
+  btnCheck.disabled = true;
+  btnCheck.textContent = 'VERIFICAR';
+
+  if (q.type === 'fill') {
+    const inp = document.getElementById('fill-input');
+    if (inp) {
+      inp.focus();
+      inp.addEventListener('input', () => { btnCheck.disabled = inp.value.trim().length === 0; });
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !btnCheck.disabled && !state.answered) checkAnswer(); });
+    }
+  }
+
+  if (q.type === 'match') {
+    // Match handles its own check
+    btnCheck.style.display = 'none';
+    btnNext.style.display = 'none';
+    // init match state
+    state.matchState = {
+      words: q.matchWords,
+      selectedEN: null,
+      matchedPairs: [],
+      mistakes: 0,
+    };
+  }
+}
+
+function renderChoice(q) {
+  const wordDisplay = q.direction === 'en_to_pt'
+    ? `<div class="word-main">${q.displayWord}</div>${q.displayPron ? `<div class="word-pron">${q.displayPron}</div>` : ''}`
+    : `<div class="word-main-pt">${q.displayWord}</div>`;
+
+  const btns = q.choices.map(c => `
+    <button class="choice-btn" onclick="selectChoice(this,'${escHtml(c)}')" data-value="${escHtml(c)}">${escHtml(c)}</button>
+  `).join('');
+
+  return `<div class="word-display">${wordDisplay}</div><div class="choices-grid">${btns}</div>`;
+}
+
+function renderFill(q) {
+  const wordDisplay = q.direction === 'en_to_pt'
+    ? `<div class="word-main">${q.displayWord}</div>${q.displayPron ? `<div class="word-pron">${q.displayPron}</div>` : ''}`
+    : `<div class="word-main-pt">${q.displayWord}</div>`;
+
+  return `
+    <div class="word-display">${wordDisplay}</div>
+    <input class="blank-input" id="fill-input" type="text" placeholder="Digite a tradução..." autocomplete="off" autocorrect="off" spellcheck="false">
+  `;
+}
+
+function renderMatch(q) {
+  const words = q.matchWords;
+  const enItems = shuffleArray([...words]).map(w =>
+    `<div class="match-item" id="men-${escHtml(w.en)}" onclick="selectMatchEN('${escHtml(w.en)}')" data-en="${escHtml(w.en)}">${escHtml(w.en)}</div>`
+  ).join('');
+  const ptItems = shuffleArray([...words]).map(w =>
+    `<div class="match-item" id="mpt-${escHtml(w.en)}" onclick="selectMatchPT('${escHtml(w.en)}')" data-en="${escHtml(w.en)}">${escHtml(w.pt)}</div>`
+  ).join('');
+
+  return `
+    <div style="font-size:13px;color:var(--text3);font-weight:600;margin-bottom:10px;text-align:center;">Clique em inglês, depois em português</div>
+    <div class="match-grid">
+      <div class="match-col">${enItems}</div>
+      <div class="match-col">${ptItems}</div>
+    </div>
+  `;
+}
+
+// =====================================================
+// ============= INTERACTIONS =========================
+// =====================================================
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function selectChoice(btn, value) {
+  if (state.answered) return;
+  state.selectedChoiceValue = value;
+  document.querySelectorAll('.choice-btn').forEach(b => {
+    b.style.borderColor = '';
+    b.style.background = '';
+  });
+  btn.style.borderColor = 'var(--accent4)';
+  btn.style.background = 'rgba(28,176,246,0.15)';
+  document.getElementById('btn-check').disabled = false;
+}
+
+// Match logic
+function selectMatchEN(en) {
+  if (!state.matchState || state.answered) return;
+  const ms = state.matchState;
+  if (ms.matchedPairs.some(p => p.en === en)) return;
+
+  // Deselect previous
+  document.querySelectorAll('.match-item').forEach(el => {
+    if (!el.classList.contains('matched')) el.classList.remove('selected-a');
+  });
+
+  ms.selectedEN = en;
+  const el = document.getElementById(`men-${en}`);
+  if (el) el.classList.add('selected-a');
+}
+
+function selectMatchPT(enKey) {
+  if (!state.matchState || state.answered) return;
+  const ms = state.matchState;
+  if (!ms.selectedEN) return;
+  if (ms.matchedPairs.some(p => p.en === enKey || p.en === ms.selectedEN)) return;
+
+  const isCorrect = ms.selectedEN === enKey;
+
+  if (isCorrect) {
+    const enEl = document.getElementById(`men-${ms.selectedEN}`);
+    const ptEl = document.getElementById(`mpt-${enKey}`);
+    if (enEl) { enEl.classList.remove('selected-a'); enEl.classList.add('matched'); }
+    if (ptEl) ptEl.classList.add('matched');
+
+    ms.matchedPairs.push({ en: ms.selectedEN });
+    ms.selectedEN = null;
+
+    // Check if all matched
+    if (ms.matchedPairs.length === ms.words.length) {
+      // Success
+      const xpGain = 15 + ms.words.length * 3;
+      state.streak += ms.words.length;
+      if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+      state.totalCorrect += ms.words.length;
+      state.totalAnswered += ms.words.length;
+      state.xp += xpGain;
+      state.sessionXp += xpGain;
+      checkLevelUp();
+      checkAchievements();
+      updateHUD();
+      saveState();
+      showXpPopup(`+${xpGain} XP`);
+      showToast('🎉 Todos os pares encontrados!');
+      setTimeout(() => {
+        document.getElementById('btn-next').style.display = 'block';
+      }, 600);
+    }
+  } else {
+    ms.mistakes++;
+    state.streak = 0;
+    state.lives--;
+    updateHUD();
+
+    const ptEl = document.getElementById(`mpt-${enKey}`);
+    const enEl = document.getElementById(`men-${ms.selectedEN}`);
+    if (ptEl) { ptEl.classList.add('wrong-match'); setTimeout(() => ptEl.classList.remove('wrong-match'), 350); }
+    if (enEl) { enEl.classList.remove('selected-a'); enEl.classList.add('wrong-match'); setTimeout(() => enEl.classList.remove('wrong-match'), 350); }
+    ms.selectedEN = null;
+
+    if (state.lives <= 0) setTimeout(showGameOver, 1000);
+  }
+}
+
+// =====================================================
+// ============= ANSWER CHECKING ======================
+// =====================================================
+
+function checkAnswer() {
+  if (state.answered) return;
+  state.answered = true;
+  const q = state.currentQuestion;
+
+  let userAnswer = '';
+  if (q.type === 'choice') userAnswer = state.selectedChoiceValue || '';
+  else if (q.type === 'fill') userAnswer = document.getElementById('fill-input')?.value.trim() || '';
+
+  const normalize = s => s.toLowerCase().trim().replace(/[áàãâä]/g,'a').replace(/[éèê]/g,'e').replace(/[íìî]/g,'i').replace(/[óòõô]/g,'o').replace(/[úùû]/g,'u').replace(/[ç]/g,'c').replace(/[ñ]/g,'n');
+  const isCorrect = normalize(userAnswer) === normalize(q.correct);
+
+  // Update cat stats
+  if (!state.catStats[q.catId]) state.catStats[q.catId] = { correct: 0, total: 0 };
+  state.catStats[q.catId].total++;
+
+  state.totalAnswered++;
+
+  if (isCorrect) {
+    state.totalCorrect++;
+    state.catStats[q.catId].correct++;
+    state.streak++;
+    if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+    const xpGain = 10 + Math.min(state.streak * 2, 20);
+    state.xp += xpGain;
+    state.sessionXp += xpGain;
+    checkLevelUp();
+    if (state.streak === 5 || state.streak % 10 === 0) showStreakMilestone();
+    showXpPopup(`+${xpGain} XP`);
+    showFeedback(true, q, userAnswer);
+    if (q.type === 'fill') document.getElementById('fill-input')?.classList.add('correct');
+    if (q.type === 'choice') {
+      document.querySelectorAll('.choice-btn').forEach(b => {
+        b.disabled = true;
+        if (b.dataset.value === q.correct) b.classList.add('correct-choice');
+        else { b.style.borderColor = ''; b.style.background = ''; }
+      });
+    }
+  } else {
+    state.streak = 0;
+    state.lives--;
+    showFeedback(false, q, userAnswer);
+    if (q.type === 'fill') document.getElementById('fill-input')?.classList.add('wrong');
+    if (q.type === 'choice') {
+      document.querySelectorAll('.choice-btn').forEach(b => {
+        b.disabled = true;
+        if (b.dataset.value === q.correct) b.classList.add('correct-choice');
+        else if (b.style.background) b.classList.add('wrong-choice');
+      });
+    }
+    if (state.lives <= 0) setTimeout(showGameOver, 2000);
+  }
+
+  checkAchievements();
+  updateHUD();
+  saveState();
+
+  document.getElementById('btn-check').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+const MOTIVATIONAL = [
+  "Incrível! Continue assim! 🚀","Você está arrasando! 🔥","Perfeito! ⭐","Fantástico! 💪",
+  "Excelente! 🏆","Keep going! 🎯","Brilhante! ✨","You're doing great! 🌟"
+];
+const WRONG_REACTIONS = [
+  "Não desista! 💙","Erro faz parte! 📚","Quase lá! 🔄","Revise e tente! ✊"
+];
+
+function showFeedback(correct, q, userAnswer) {
+  const container = document.getElementById('feedback-container');
+  container.style.display = 'block';
+
+  const motivation = correct ? rand(MOTIVATIONAL) : rand(WRONG_REACTIONS);
+
+  let html;
+  if (correct) {
+    html = `
+      <div class="feedback-panel correct-panel">
+        <div class="feedback-header"><span class="feedback-icon">🎉</span><span class="feedback-title">Correto!</span></div>
+        <div class="feedback-info">
+          <strong>${q.word.en}</strong> = <strong>${q.word.pt}</strong>
+          ${q.word.pron ? `<div class="feedback-pron">🔊 /${q.word.pron}/</div>` : ''}
+        </div>
+        <div class="feedback-motivation">${motivation}</div>
+      </div>
+    `;
+  } else {
+    html = `
+      <div class="feedback-panel wrong-panel">
+        <div class="feedback-header"><span class="feedback-icon">❌</span><span class="feedback-title">Incorreto</span></div>
+        <div class="feedback-info">Sua resposta: <span style="color:var(--accent3);font-family:'Space Mono',monospace;font-weight:700;">${escHtml(userAnswer || '(vazio)')}</span></div>
+        <div class="feedback-correct-answer">✅ Resposta correta: ${escHtml(q.correct)}</div>
+        <div class="feedback-info">
+          <strong>${q.word.en}</strong> = <strong>${q.word.pt}</strong>
+          ${q.word.pron ? `<div class="feedback-pron">🔊 /${q.word.pron}/</div>` : ''}
+          <div style="margin-top:6px;font-size:12px;color:var(--text3);">📂 Categoria: ${q.catIcon} ${q.catName}</div>
+        </div>
+        <div class="feedback-motivation" style="color:var(--accent4);">${motivation}</div>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+  container.scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function nextQuestion() {
+  if (state.lives <= 0) { showGameOver(); return; }
+  renderNextQuestion();
+  document.getElementById('question-container').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function showGameOver() {
+  document.getElementById('go-total').textContent = state.totalAnswered;
+  document.getElementById('go-correct').textContent = state.totalCorrect;
+  document.getElementById('go-xp').textContent = state.sessionXp;
+  document.getElementById('go-streak').textContent = state.maxStreak;
+  showScreen('gameover-screen');
+}
+
+// ===== HUD =====
+function updateHUD() {
+  const livesEl = document.getElementById('hud-lives');
+  if (livesEl) {
+    livesEl.innerHTML = '';
+    for (let i = 0; i < state.maxLives; i++) {
+      const h = document.createElement('span');
+      h.className = 'life-icon' + (i < state.lives ? '' : ' lost');
+      h.textContent = '❤️';
+      livesEl.appendChild(h);
+    }
+  }
+  const sc = document.getElementById('streak-count');
+  if (sc) sc.textContent = state.streak;
+
+  const xpNeeded = xpForLevel(state.level);
+  const pct = Math.min((state.xp / xpNeeded) * 100, 100);
+  const xpBar = document.getElementById('xp-bar');
+  if (xpBar) xpBar.style.width = pct + '%';
+  const xpLabel = document.getElementById('xp-label');
+  if (xpLabel) xpLabel.textContent = `XP: ${state.xp}/${xpNeeded}`;
+  const hudLevel = document.getElementById('hud-level');
+  if (hudLevel) hudLevel.textContent = `Lv.${state.level}`;
+
+  // Home
+  const hl = document.getElementById('home-level');
+  if (hl) hl.textContent = state.level;
+  const hx = document.getElementById('home-xp');
+  if (hx) hx.textContent = state.xp + (state.level-1)*100;
+  const hs = document.getElementById('home-streak');
+  if (hs) hs.textContent = state.maxStreak;
+}
+
+function checkLevelUp() {
+  while (state.xp >= xpForLevel(state.level)) {
+    state.xp -= xpForLevel(state.level);
+    state.level++;
+    showToast(`🎉 Nível ${state.level} alcançado!`);
+  }
+}
+
+function showXpPopup(text) {
+  const el = document.createElement('div');
+  el.className = 'xp-popup';
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+}
+
+function showStreakMilestone() {
+  const el = document.createElement('div');
+  el.className = 'streak-milestone';
+  el.innerHTML = `🔥<br>${state.streak}x Combo!`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1600);
+}
+
+function showToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+// ===== ACHIEVEMENTS =====
+const ACHIEV = [
+  { id:'first', icon:'🌟', name:'Primeira Palavra', cond:() => state.totalCorrect >= 1 },
+  { id:'10words', icon:'📖', name:'10 Palavras', cond:() => state.totalCorrect >= 10 },
+  { id:'50words', icon:'📚', name:'50 Palavras', cond:() => state.totalCorrect >= 50 },
+  { id:'100words', icon:'🎓', name:'100 Palavras', cond:() => state.totalCorrect >= 100 },
+  { id:'streak5', icon:'🔥', name:'5 Seguidos', cond:() => state.maxStreak >= 5 },
+  { id:'streak10', icon:'💥', name:'10 Combo', cond:() => state.maxStreak >= 10 },
+  { id:'level5', icon:'⬆️', name:'Nível 5', cond:() => state.level >= 5 },
+  { id:'level10', icon:'🏆', name:'Nível 10', cond:() => state.level >= 10 },
+  { id:'allcats', icon:'🗂️', name:'Todas Categorias', cond:() => Object.keys(state.catStats).length >= CATEGORIES.length },
+  { id:'accuracy', icon:'🎯', name:'Precisão 90%', cond:() => state.totalAnswered >= 20 && (state.totalCorrect/state.totalAnswered) >= 0.9 },
+];
+
+function checkAchievements() {
+  ACHIEV.forEach(a => {
+    if (!state.unlockedAchievements.includes(a.id) && a.cond()) {
+      state.unlockedAchievements.push(a.id);
+      showToast(`🏅 Conquista: ${a.name}!`);
+    }
+  });
+}
+
+// ===== STATS =====
+function renderStats() {
+  const accuracy = state.totalAnswered > 0 ? Math.round((state.totalCorrect/state.totalAnswered)*100) : 0;
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card"><div class="stat-card-icon">✅</div><div class="stat-card-value">${state.totalCorrect}</div><div class="stat-card-label">Acertos</div></div>
+    <div class="stat-card"><div class="stat-card-icon">📊</div><div class="stat-card-value">${accuracy}%</div><div class="stat-card-label">Precisão</div></div>
+    <div class="stat-card"><div class="stat-card-icon">🔥</div><div class="stat-card-value">${state.maxStreak}</div><div class="stat-card-label">Maior Streak</div></div>
+    <div class="stat-card"><div class="stat-card-icon">⬆️</div><div class="stat-card-value">${state.level}</div><div class="stat-card-label">Nível</div></div>
+    <div class="stat-card"><div class="stat-card-icon">📚</div><div class="stat-card-value">${state.totalAnswered}</div><div class="stat-card-label">Respondidas</div></div>
+    <div class="stat-card"><div class="stat-card-icon">⭐</div><div class="stat-card-value">${state.xp+(state.level-1)*100}</div><div class="stat-card-label">XP Total</div></div>
+  `;
+
+  document.getElementById('cat-progress-list').innerHTML = CATEGORIES.map(cat => {
+    const cs = state.catStats[cat.id] || { correct:0, total:0 };
+    const pct = cs.total > 0 ? Math.round((cs.correct/cat.words.length)*100) : 0;
+    return `
+      <div class="cat-progress-item">
+        <span class="cat-progress-icon">${cat.icon}</span>
+        <div class="cat-progress-info">
+          <div class="cat-progress-name">${cat.name}</div>
+          <div class="cat-progress-bar-wrap"><div class="cat-progress-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,${cat.color},${cat.color}88)"></div></div>
+        </div>
+        <div class="cat-progress-num">${cs.correct}/${cat.words.length}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('achievements-grid').innerHTML = ACHIEV.map(a => `
+    <div class="achievement ${state.unlockedAchievements.includes(a.id) ? 'unlocked' : ''}">
+      <div class="achievement-icon">${a.icon}</div>
+      <div class="achievement-name">${a.name}</div>
+    </div>
+  `).join('');
+}
+
+// ===== RANKING =====
+const FAKE_PLAYERS = [
+  {name:'Ana Lima',avatar:'👩',score:3200,level:14},
+  {name:'Carlos R.',avatar:'👨',score:2500,level:11},
+  {name:'Beatriz M.',avatar:'👩‍🦱',score:2100,level:10},
+  {name:'Pedro H.',avatar:'🧑',score:1700,level:8},
+  {name:'Larissa F.',avatar:'👧',score:1300,level:7},
+  {name:'Rafael S.',avatar:'🧔',score:950,level:5},
+];
+
+function renderRanking() {
+  const myScore = state.xp + (state.level-1)*100 + state.totalCorrect*5;
+  const all = [...FAKE_PLAYERS, {name:'Você',avatar:'⭐',score:myScore,level:state.level,isYou:true}]
+    .sort((a,b) => b.score - a.score);
+
+  const top3 = all.slice(0,3);
+  const podiumOrder = [1,0,2];
+  const podiumHeights = [62,85,48];
+  const podiumClasses = ['podium-2','podium-1','podium-3'];
+  const medals = ['🥈','🥇','🥉'];
+
+  document.getElementById('podium').innerHTML = podiumOrder.map((idx,i) => {
+    const p = top3[idx]; if(!p) return '';
+    return `
+      <div class="podium-place ${podiumClasses[i]}">
+        <div class="podium-avatar">${p.avatar}</div>
+        <div class="podium-name">${p.name}</div>
+        <div class="podium-score">${p.score} XP</div>
+        <div class="podium-block" style="height:${podiumHeights[i]}px">${medals[i]}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('rank-list').innerHTML = all.map((p,i) => `
+    <div class="rank-item ${p.isYou?'is-you':''}">
+      <div class="rank-num">${i+1}</div>
+      <div class="rank-avatar">${p.avatar}</div>
+      <div class="rank-info">
+        <div class="rank-name">${p.name}${p.isYou?' (Você)':''}</div>
+        <div class="rank-level">Nível ${p.level}</div>
+      </div>
+      <div class="rank-score">${p.score}</div>
+    </div>
+  `).join('');
+}
+
+// ===== MODE SELECTOR =====
+document.querySelectorAll('.mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.currentMode = btn.dataset.mode;
+  });
+});
+
+// =====================================================
+// ============= STUDY SCREEN =========================
+// =====================================================
+
+const COLOR_HEX = {
+  'Red':'#e74c3c','Yellow':'#f1c40f','Green':'#27ae60','Dark green':'#1a6b3c',
+  'Blue':'#2980b9','Dark blue':'#1a3a6b','Lilac':'#c39bd3','Purple':'#8e44ad',
+  'Pink':'#ff69b4','Silver':'#bdc3c7','Orange':'#e67e22','Brown':'#795548',
+  'Beige':'#d7ccc8','Black':'#1a1a1a','White':'#f5f5f5','Grey':'#9e9e9e',
+  'Turquoise':'#1abc9c','Gold':'#d4ac0d','Light blue':'#85c1e9','Light green':'#82e0aa'
+};
+
+let studyCatId = null;
+let flashIdx = 0;
+let flashFlipped = false;
+let studyView = 'table';
+
+function openStudyScreen(catId) {
+  studyCatId = catId;
+  flashIdx = 0;
+  flashFlipped = false;
+  studyView = 'table';
+  const cat = CATEGORIES.find(c => c.id === catId);
+  if (!cat) return;
+  document.getElementById('study-title').textContent = cat.icon + ' ' + cat.name;
+  document.getElementById('study-sub').textContent = cat.words.length + ' palavras';
+  renderStudyBody(cat);
+  showScreen('study-screen');
+}
+
+function startFromStudy() {
+  if (studyCatId && !state.selectedCats.includes(studyCatId)) {
+    state.selectedCats.push(studyCatId);
+    const card = document.getElementById('cat-' + studyCatId);
+    if (card) card.classList.add('selected');
+    const chk = document.getElementById('cat-check-' + studyCatId);
+    if (chk) chk.textContent = '✅';
+    document.getElementById('btn-start').disabled = false;
+  }
+  startGame();
+}
+
+function renderStudyBody(cat) {
+  const body = document.getElementById('study-body');
+  const cid = cat.id;
+  const tActive = studyView==='table' ? 'active' : '';
+  const fActive = studyView==='flash' ? 'active' : '';
+  let html = `<div class="view-toggle">
+    <button class="view-btn ${tActive}" onclick="setStudyView('table','${cid}')">📋 Tabela</button>
+    <button class="view-btn ${fActive}" onclick="setStudyView('flash','${cid}')">🃏 Flashcards</button>
+  </div>`;
+
+  if (studyView === 'table') {
+    html += `<div class="study-search-wrap"><span class="study-search-icon">🔍</span>
+      <input class="study-search" id="study-search" type="text" placeholder="Buscar palavra..."
+      oninput="filterStudyTable('${cid}', this.value)"></div>`;
+  }
+
+  if (studyView === 'flash') {
+    html += renderFlashcardView(cat);
+  } else if (cat.id === 'alfabeto') {
+    html += renderAlphabetView(cat);
+  } else if (cat.id === 'cores') {
+    html += renderColorsView(cat);
+  } else {
+    html += renderTableView(cat, '');
+  }
+
+  body.innerHTML = html;
+}
+
+function setStudyView(view, catId) {
+  studyView = view;
+  flashIdx = 0;
+  flashFlipped = false;
+  const cat = CATEGORIES.find(c => c.id === catId);
+  if (cat) renderStudyBody(cat);
+}
+
+function renderTableView(cat, filter) {
+  const words = filter
+    ? cat.words.filter(w => w.en.toLowerCase().includes(filter.toLowerCase()) || w.pt.toLowerCase().includes(filter.toLowerCase()))
+    : cat.words;
+  if (words.length === 0) return '<div style="text-align:center;padding:40px;color:var(--text3);font-weight:600;">Nenhuma palavra encontrada.</div>';
+  const rows = words.map(function(w, i) {
+    return '<tr class="vocab-row"><td class="cell-num">' + (i+1) + '</td><td class="cell-en">' + w.en + '</td><td class="cell-pron">' + (w.pron||'—') + '</td><td class="cell-pt">' + w.pt + '</td></tr>';
+  }).join('');
+  return '<table class="vocab-table" id="study-table"><thead><tr><th>#</th><th>🇺🇸 Inglês</th><th>🔊 Pronúncia</th><th>🇧🇷 Português</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function renderAlphabetView(cat) {
+  return '<div class="alphabet-grid">' + cat.words.map(function(w) {
+    return '<div class="alphabet-card"><div class="alpha-letter">' + w.en + '</div><div class="alpha-pron">' + w.pron + '</div></div>';
+  }).join('') + '</div>';
+}
+
+function renderColorsView(cat) {
+  return '<div class="color-grid">' + cat.words.map(function(w) {
+    var hex = COLOR_HEX[w.en] || '#888';
+    var light = ['White','Yellow','Beige','Silver','Gold','Light blue','Light green'].includes(w.en);
+    var tc = light ? '#1a1d2e' : '#fff';
+    return '<div class="color-card">' +
+      '<div class="color-swatch" style="background:' + hex + ';display:flex;align-items:center;justify-content:center;">' +
+      '<span style="color:' + tc + ';font-weight:900;font-size:11px;opacity:0.7;">' + hex + '</span></div>' +
+      '<div class="color-card-body"><div class="color-en">' + w.en + '</div><div class="color-pron">' + w.pron + '</div><div class="color-pt">' + w.pt + '</div></div>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+function renderFlashcardView(cat) {
+  const w = cat.words[flashIdx];
+  const total = cat.words.length;
+  const cid = cat.id;
+  const prevDis = flashIdx===0 ? 'disabled style="opacity:0.3"' : '';
+  const nextDis = flashIdx===total-1 ? 'disabled style="opacity:0.3"' : '';
+  return `<div class="flashcard-wrap">
+    <div class="flashcard ${flashFlipped?'flipped':''}" id="flashcard-el" onclick="flipCard()">
+      <div class="flashcard-inner">
+        <div class="flashcard-front">
+          <div class="fc-word">${w.en}</div>
+          ${w.pron ? `<div class="fc-pron">🔊 ${w.pron}</div>` : ''}
+          <div class="fc-tap" style="margin-top:20px;">👆 Toque para ver a tradução</div>
+        </div>
+        <div class="flashcard-back">
+          <div style="font-size:13px;color:var(--text3);margin-bottom:8px;font-weight:600;">Tradução</div>
+          <div class="fc-translation">${w.pt}</div>
+          ${w.pron ? `<div class="fc-pron" style="font-size:14px;">🔊 ${w.pron}</div>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="flashcard-nav">
+      <button class="fc-nav-btn" onclick="flashNav(-1)" ${prevDis}>←</button>
+      <div class="fc-counter">${flashIdx+1} / ${total}</div>
+      <button class="fc-nav-btn" onclick="flashNav(1)" ${nextDis}>→</button>
+    </div>
+    <div style="margin-top:14px;text-align:center;">
+      <button class="fc-nav-btn" onclick="shuffleFlash('${cid}')" style="width:auto;padding:0 20px;border-radius:20px;font-size:13px;font-weight:700;color:var(--text2);">🔀 Embaralhar</button>
+    </div>
+  </div>`;
+}
+
+function flipCard() {
+  flashFlipped = !flashFlipped;
+  var el = document.getElementById('flashcard-el');
+  if (el) el.classList.toggle('flipped', flashFlipped);
+}
+
+function flashNav(dir) {
+  var cat = CATEGORIES.find(function(c){return c.id===studyCatId;});
+  if (!cat) return;
+  flashIdx = Math.max(0, Math.min(cat.words.length-1, flashIdx+dir));
+  flashFlipped = false;
+  renderStudyBody(cat);
+}
+
+function shuffleFlash(catId) {
+  var cat = CATEGORIES.find(function(c){return c.id===catId;});
+  if (!cat) return;
+  cat.words = shuffleArray(cat.words);
+  flashIdx = 0;
+  flashFlipped = false;
+  renderStudyBody(cat);
+}
+
+function filterStudyTable(catId, query) {
+  var cat = CATEGORIES.find(function(c){return c.id===catId;});
+  if (!cat) return;
+  var table = document.getElementById('study-table');
+  if (!table) return;
+  var filter = query.toLowerCase();
+  var words = filter ? cat.words.filter(function(w){return w.en.toLowerCase().includes(filter)||w.pt.toLowerCase().includes(filter);}) : cat.words;
+  var tbody = table.querySelector('tbody');
+  if (!tbody) return;
+  tbody.innerHTML = words.map(function(w,i) {
+    return '<tr class="vocab-row"><td class="cell-num">'+(i+1)+'</td><td class="cell-en">'+hl(w.en,query)+'</td><td class="cell-pron">'+(w.pron||'—')+'</td><td class="cell-pt">'+hl(w.pt,query)+'</td></tr>';
+  }).join('');
+}
+
+function hl(text, query) {
+  if (!query) return text;
+  var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+  return text.replace(re, '<mark style="background:rgba(206,130,255,0.3);color:var(--text);border-radius:3px;padding:0 2px;">$1</mark>');
+}
+
+// ===== INIT =====
+loadState();
+renderCategoryList();
+updateHUD();
+</script>
+</body>
+</html>
