@@ -1498,6 +1498,7 @@ function selectMatchPT(enKey) {
       checkAchievements();
       updateHUD();
       saveState();
+      playStreakSound();
       showXpPopup(`+${xpGain} XP`);
       showToast('🎉 Todos os pares encontrados!');
       setTimeout(() => {
@@ -1508,6 +1509,7 @@ function selectMatchPT(enKey) {
     ms.mistakes++;
     state.streak = 0;
     state.lives--;
+    playWrongSound();
     updateHUD();
 
     const ptEl = document.getElementById(`mpt-${enKey}`);
@@ -1551,7 +1553,8 @@ function checkAnswer() {
     state.xp += xpGain;
     state.sessionXp += xpGain;
     checkLevelUp();
-    if (state.streak === 5 || state.streak % 10 === 0) showStreakMilestone();
+    if (state.streak === 5 || state.streak % 10 === 0) { playStreakSound(); showStreakMilestone(); }
+    else { playCorrectSound(); }
     showXpPopup(`+${xpGain} XP`);
     showFeedback(true, q, userAnswer);
     if (q.type === 'fill') document.getElementById('fill-input')?.classList.add('correct');
@@ -1565,6 +1568,7 @@ function checkAnswer() {
   } else {
     state.streak = 0;
     state.lives--;
+    playWrongSound();
     showFeedback(false, q, userAnswer);
     if (q.type === 'fill') document.getElementById('fill-input')?.classList.add('wrong');
     if (q.type === 'choice') {
@@ -1684,6 +1688,133 @@ function checkLevelUp() {
     state.level++;
     showToast(`🎉 Nível ${state.level} alcançado!`);
   }
+}
+
+// =====================================================
+// ============= AUDIO ENGINE =========================
+// =====================================================
+
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  // Resume if suspended (mobile browsers require user gesture)
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playCorrectSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+
+    // Cheerful ascending chime: C5 → E5 → G5 → C6
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    const delays = [0, 0.08, 0.16, 0.26];
+
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + delays[i]);
+
+      // Last note rings longer
+      const duration = i === notes.length - 1 ? 0.35 : 0.18;
+      gain.gain.setValueAtTime(0, now + delays[i]);
+      gain.gain.linearRampToValueAtTime(0.28, now + delays[i] + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delays[i] + duration);
+
+      osc.start(now + delays[i]);
+      osc.stop(now + delays[i] + duration + 0.05);
+    });
+
+    // Add a soft sparkle layer on the last note
+    const sparkle = ctx.createOscillator();
+    const sparkleGain = ctx.createGain();
+    sparkle.connect(sparkleGain);
+    sparkleGain.connect(ctx.destination);
+    sparkle.type = 'triangle';
+    sparkle.frequency.setValueAtTime(2093, now + 0.26);
+    sparkleGain.gain.setValueAtTime(0, now + 0.26);
+    sparkleGain.gain.linearRampToValueAtTime(0.12, now + 0.28);
+    sparkleGain.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
+    sparkle.start(now + 0.26);
+    sparkle.stop(now + 0.6);
+
+  } catch(e) { /* audio not supported */ }
+}
+
+function playWrongSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+
+    // Low "doh-doh" descending buzz
+    const notes = [220, 185];
+    const delays = [0, 0.18];
+
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      // Add slight distortion via waveshaper
+      const wave = ctx.createWaveShaper();
+      function makeDistortionCurve(amount) {
+        const samples = 256;
+        const curve = new Float32Array(samples);
+        for (let j = 0; j < samples; j++) {
+          const x = (j * 2) / samples - 1;
+          curve[j] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+        }
+        return curve;
+      }
+      wave.curve = makeDistortionCurve(30);
+
+      osc.connect(wave);
+      wave.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq, now + delays[i]);
+      osc.frequency.linearRampToValueAtTime(freq * 0.88, now + delays[i] + 0.22);
+
+      gain.gain.setValueAtTime(0, now + delays[i]);
+      gain.gain.linearRampToValueAtTime(0.22, now + delays[i] + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + delays[i] + 0.28);
+
+      osc.start(now + delays[i]);
+      osc.stop(now + delays[i] + 0.35);
+    });
+
+  } catch(e) { /* audio not supported */ }
+}
+
+function playStreakSound() {
+  try {
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+    // Extra sparkly ascending run for streak milestone
+    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = i % 2 === 0 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(freq, now + i * 0.07);
+      gain.gain.setValueAtTime(0, now + i * 0.07);
+      gain.gain.linearRampToValueAtTime(0.22, now + i * 0.07 + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.25);
+      osc.start(now + i * 0.07);
+      osc.stop(now + i * 0.07 + 0.3);
+    });
+  } catch(e) {}
 }
 
 function showXpPopup(text) {
