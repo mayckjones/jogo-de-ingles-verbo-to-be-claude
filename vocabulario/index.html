@@ -765,15 +765,32 @@ const CATEGORIES = [
     icon: '🔤',
     color: '#ce82ff',
     words: [
-      {en:'A',pron:'EI',pt:'A'},{en:'B',pron:'BI',pt:'B'},{en:'C',pron:'CI',pt:'C'},
-      {en:'D',pron:'DI',pt:'D'},{en:'E',pron:'I',pt:'E'},{en:'F',pron:'ÉF',pt:'F'},
-      {en:'G',pron:'DJI',pt:'G'},{en:'H',pron:'EITCH',pt:'H'},{en:'I',pron:'AI',pt:'I'},
-      {en:'J',pron:'DJEI',pt:'J'},{en:'K',pron:'KEI',pt:'K'},{en:'L',pron:'EL',pt:'L'},
-      {en:'M',pron:'EM',pt:'M'},{en:'N',pron:'EN',pt:'N'},{en:'O',pron:'OU',pt:'O'},
-      {en:'P',pron:'PI',pt:'P'},{en:'Q',pron:'QUIU',pt:'Q'},{en:'R',pron:'AR',pt:'R'},
-      {en:'S',pron:'ES',pt:'S'},{en:'T',pron:'TI',pt:'T'},{en:'U',pron:'IU',pt:'U'},
-      {en:'V',pron:'VI',pt:'V'},{en:'W',pron:'DÂBLIU',pt:'W'},{en:'X',pron:'ÉCS',pt:'X'},
-      {en:'Y',pron:'UAI',pt:'Y'},{en:'Z',pron:'ZI',pt:'Z'}
+      {en:'A',pron:'EI',pt:'EI'},
+      {en:'B',pron:'BI',pt:'BI'},
+      {en:'C',pron:'CI',pt:'CI'},
+      {en:'D',pron:'DI',pt:'DI'},
+      {en:'E',pron:'I',pt:'I'},
+      {en:'F',pron:'ÉF',pt:'ÉF'},
+      {en:'G',pron:'DJI',pt:'DJI'},
+      {en:'H',pron:'EITCH',pt:'EITCH'},
+      {en:'I',pron:'AI',pt:'AI'},
+      {en:'J',pron:'DJEI',pt:'DJEI'},
+      {en:'K',pron:'KEI',pt:'KEI'},
+      {en:'L',pron:'EL',pt:'EL'},
+      {en:'M',pron:'EM',pt:'EM'},
+      {en:'N',pron:'EN',pt:'EN'},
+      {en:'O',pron:'OU',pt:'OU'},
+      {en:'P',pron:'PI',pt:'PI'},
+      {en:'Q',pron:'QUIU',pt:'QUIU'},
+      {en:'R',pron:'AR',pt:'AR'},
+      {en:'S',pron:'ES',pt:'ES'},
+      {en:'T',pron:'TI',pt:'TI'},
+      {en:'U',pron:'IU',pt:'IU'},
+      {en:'V',pron:'VI',pt:'VI'},
+      {en:'W',pron:'DÂBLIU',pt:'DÂBLIU'},
+      {en:'X',pron:'ÉCS',pt:'ÉCS'},
+      {en:'Y',pron:'UAI',pt:'UAI'},
+      {en:'Z',pron:'ZI',pt:'ZI'}
     ]
   },
   {
@@ -1185,6 +1202,11 @@ function generateQuestion() {
 }
 
 function generateChoiceQuestion(pool, word, direction) {
+  // Special handling for alphabet: question = letter, answers = pronunciations
+  if (word.catId === 'alfabeto') {
+    return generateAlphabetQuestion(pool, word);
+  }
+
   // Build distractors from same category or other words
   const distractors = pool.filter(w => w.en !== word.en);
   const shuffledD = shuffleArray(distractors).slice(0, 3);
@@ -1194,7 +1216,7 @@ function generateChoiceQuestion(pool, word, direction) {
 
   if (direction === 'en_to_pt') {
     correct = word.pt;
-    instruction = `O que significa <strong>"${word.en}"</strong> em português?`;
+    instruction = `Qual o significado de <strong>"${word.en}"</strong>?`;
     displayWord = word.en;
     displayPron = word.pron;
     choices = shuffleArray([correct, ...shuffledD.map(d => d.pt)]);
@@ -1214,8 +1236,86 @@ function generateChoiceQuestion(pool, word, direction) {
   };
 }
 
+// Alphabet-specific question: show letter, pick pronunciation
+// Distractors are visually/phonetically similar letters
+const ALPHA_SIMILAR = {
+  'A': ['EI','AI','OU','I'],
+  'B': ['BI','PI','DI','VI'],
+  'C': ['CI','SI','DJI','TI'],
+  'D': ['DI','BI','TI','DJI'],
+  'E': ['I','AI','EI','IU'],
+  'F': ['ÉF','ÉCS','ES','EL'],
+  'G': ['DJI','DI','DJEI','CI'],
+  'H': ['EITCH','AI','EI','I'],
+  'I': ['AI','EI','I','IU'],
+  'J': ['DJEI','DJI','DI','DJEI'],
+  'K': ['KEI','EI','DI','CI'],
+  'L': ['EL','EM','EN','AR'],
+  'M': ['EM','EN','EL','ÉF'],
+  'N': ['EN','EM','EL','IN'],
+  'O': ['OU','IU','EI','AU'],
+  'P': ['PI','BI','DI','TI'],
+  'Q': ['QUIU','IU','CI','KEI'],
+  'R': ['AR','ÉF','EL','ES'],
+  'S': ['ES','ÉCS','ÉF','EL'],
+  'T': ['TI','DI','BI','CI'],
+  'U': ['IU','OU','AI','EI'],
+  'V': ['VI','BI','PI','DI'],
+  'W': ['DÂBLIU','VI','IU','UAI'],
+  'X': ['ÉCS','ES','ÉF','EL'],
+  'Y': ['UAI','AI','EI','IU'],
+  'Z': ['ZI','DI','ES','CI'],
+};
+
+function generateAlphabetQuestion(pool, word) {
+  const correct = word.pt; // the pronunciation sound e.g. "EI"
+  const letter = word.en;  // e.g. "A"
+
+  // Get phonetically similar distractors
+  const similar = (ALPHA_SIMILAR[letter] || []).filter(s => s !== correct);
+  // Shuffle and pick 3 distractors
+  const distractors = shuffleArray(similar).slice(0, 3);
+  // Pad with random pronunciation sounds if needed
+  if (distractors.length < 3) {
+    const allSounds = pool.filter(w => w.en !== letter).map(w => w.pt);
+    const extra = shuffleArray(allSounds).filter(s => !distractors.includes(s) && s !== correct);
+    while (distractors.length < 3 && extra.length) distractors.push(extra.shift());
+  }
+
+  const choices = shuffleArray([correct, ...distractors.slice(0, 3)]);
+
+  return {
+    id: Math.random(),
+    type: 'choice',
+    direction: 'en_to_pt',
+    word,
+    instruction: `Como se pronuncia a letra <strong>${letter}</strong> em inglês?`,
+    displayWord: letter,
+    displayPron: null,
+    correct,
+    choices,
+    catName: word.catName, catIcon: word.catIcon, catColor: word.catColor, catId: word.catId,
+    isAlphabet: true,
+  };
+}
+
 function generateFillQuestion(word, direction) {
   let instruction, displayWord, displayPron, correct, hint;
+
+  // Special: alphabet fill — show letter, type pronunciation
+  if (word.catId === 'alfabeto') {
+    instruction = `Como se pronuncia a letra <strong>${word.en}</strong> em inglês?`;
+    displayWord = word.en;
+    displayPron = null;
+    correct = word.pt; // pronunciation sound e.g. "EI"
+    hint = word.pt[0].toLowerCase();
+    return {
+      id: Math.random(), type: 'fill', direction: 'en_to_pt',
+      word, instruction, displayWord, displayPron,
+      correct, hint,
+      catName: word.catName, catIcon: word.catIcon, catColor: word.catColor, catId: word.catId,
+    };
+  }
 
   if (direction === 'en_to_pt') {
     instruction = `Traduza para português: <strong>${word.en}</strong>`;
@@ -2046,7 +2146,11 @@ function renderTableView(cat, filter) {
 
 function renderAlphabetView(cat) {
   return '<div class="alphabet-grid">' + cat.words.map(function(w) {
-    return '<div class="alphabet-card"><div class="alpha-letter">' + w.en + '</div><div class="alpha-pron">' + w.pron + '</div></div>';
+    return '<div class="alphabet-card">' +
+      '<div class="alpha-letter">' + w.en + '</div>' +
+      '<div class="alpha-pron" style="font-size:13px;font-weight:800;color:var(--accent4);">' + w.pt + '</div>' +
+      '<div style="font-size:10px;color:var(--text3);margin-top:2px;">som</div>' +
+      '</div>';
   }).join('') + '</div>';
 }
 
